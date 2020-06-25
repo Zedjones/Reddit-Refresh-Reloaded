@@ -4,6 +4,22 @@
  - Store all previous results in the database, which provides these benefits: 
    - Can find the most recent by simply sorting by insertion date
    - Allows us to display history of results on web interface in case a notification gets deleted
+ - Tables
+   - Users
+     - JWT Token
+     - Email (or username)
+     - Hashed Password
+     - Refresh time
+     - Any notifier specific configuration options
+   - Searches
+     - ID
+     - Username
+     - Subreddit
+     - Search term
+   - Results
+     - Time inserted
+     - Search ID
+     - Title
 
 ## Notifiers
  - Instead of being totally tied to Pushbullet, or Gotify, or any other notification service, make a `Notifier` trait which simply implements a function to send a notification. This could write the notification to a file, or use a service, or write to stdout.

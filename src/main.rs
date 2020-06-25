@@ -1,7 +1,9 @@
+mod db;
+mod notifiers;
 mod routes;
 
-use actix_web::{web, App, HttpServer};
 use actix_web::middleware::Logger;
+use actix_web::{web, App, HttpServer};
 use env_logger::Env;
 
 use routes::greet;
