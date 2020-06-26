@@ -1510,6 +1510,7 @@ dependencies = [
  "actix-rt",
  "actix-web",
  "chrono",
+ "dotenv",
  "env_logger",
  "log",
  "refinery",

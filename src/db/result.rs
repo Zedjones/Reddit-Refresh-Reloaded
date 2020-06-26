@@ -1,6 +1,6 @@
 use chrono::{DateTime, Utc};
 
-struct Result {
+pub(crate) struct Result {
     id: i32,
     inserted: DateTime<Utc>,
     search_id: i32,

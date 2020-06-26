@@ -5,6 +5,4 @@ pub(crate) struct Search {
     search_term: String,
 }
 
-impl Search {
-    
-}
+impl Search {}
