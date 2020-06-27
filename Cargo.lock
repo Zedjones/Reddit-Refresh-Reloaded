@@ -1519,7 +1519,6 @@ dependencies = [
  "chrono",
  "dotenv",
  "env_logger",
- "futures",
  "log",
  "refinery",
  "sqlx",
