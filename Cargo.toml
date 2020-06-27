@@ -11,8 +11,15 @@ actix-web = "2.0.0"
 actix-rt = "1.1.1"
 env_logger = "0.7.1"
 log = "0.4.8"
-sqlx = { version = "0.3.0", default-features = false, features = [ "runtime-tokio", "macros", "postgres", "chrono" ] }
-refinery = { version = "0.3.0", features = [ "postgres" ] }
+sqlx = { version = "0.3.5", default-features = false, features = [ "runtime-tokio", "macros", "postgres", "chrono" ] }
+refinery = { git = "https://github.com/rust-db/refinery", features = [ "postgres" ] }
 chrono = "0.4.11"
 dotenv = "0.15.0"
 anyhow = "1.0.31"
+
+[build-dependencies]
+log = "0.4.8"
+sqlx = { version = "0.3.5", default-features = false, features = [ "runtime-tokio", "macros", "postgres", "chrono" ] }
+refinery = { git = "https://github.com/rust-db/refinery", features = [ "postgres" ] }
+futures = "0.3.5"
+dotenv = "0.15.0"

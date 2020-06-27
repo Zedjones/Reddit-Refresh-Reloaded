@@ -1,4 +1,5 @@
 use chrono::{DateTime, Utc};
+use sqlx::PgPool;
 
 pub(crate) struct Result {
     id: i32,
@@ -7,4 +8,8 @@ pub(crate) struct Result {
     title: String,
 }
 
-impl Result {}
+impl Result {
+    pub async fn insert(&self, pool: PgPool) -> anyhow::Result<Self> {
+        todo!()
+    }
+}
