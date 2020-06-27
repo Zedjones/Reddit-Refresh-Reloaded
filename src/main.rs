@@ -8,8 +8,8 @@ use dotenv;
 use env_logger::Env;
 use log::error;
 
-use routes::greet;
 use db::timeout_connect;
+use routes::greet;
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {

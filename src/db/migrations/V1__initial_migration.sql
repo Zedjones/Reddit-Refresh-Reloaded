@@ -7,9 +7,9 @@ CREATE TABLE users (
 
 CREATE TABLE searches (
     id SERIAL UNIQUE PRIMARY KEY NOT NULL,
-    username VARCHAR,
-    subreddit VARCHAR,
-    search_term VARCHAR,
+    username VARCHAR NOT NULL,
+    subreddit VARCHAR NOT NULL,
+    search_term VARCHAR NOT NULL,
     FOREIGN KEY (username) REFERENCES users(username)
 );
 
