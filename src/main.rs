@@ -19,14 +19,13 @@ async fn timeout_connect() -> Option<PgPool> {
     let start = std::time::Instant::now();
     info!("Attempting to connect to Postgres at address {}", db_url);
     info!("Timeout is: {} seconds", CONN_TIMEOUT.as_secs());
-    if let Ok(pool) = PgPool::builder().build(&db_url).await {
+    if let Ok(pool) = PgPool::new(&db_url).await {
         loop {
             if pool.try_acquire().is_some() {
                 return Some(pool);
             } else if start.elapsed() > CONN_TIMEOUT {
                 return None;
             }
-            info!("Sleeping...");
             info!("Elapsed: {}", start.elapsed().as_secs());
             std::thread::sleep(Duration::from_secs(1));
         }
