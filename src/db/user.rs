@@ -38,3 +38,30 @@ impl User {
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::db::{
+        timeout_connect,
+        user::{NewUser, User},
+    };
+    #[tokio::test]
+    /**
+    This test isn't really a proper test, it's just a quick and easy way to test
+    that we can properly insert a value into an empty database. This will currently
+    fail if run twice in a row without clearing the DB.
+    */
+    async fn insert_user() {
+        std::env::set_var(
+            "DATABASE_URL",
+            "postgresql://zedjones:changeMe@localhost/postgres",
+        );
+        let pool = timeout_connect().await.unwrap();
+        let user = NewUser {
+            password: "a_password".to_string(),
+            username: "a_user".to_string(),
+            refresh_time: std::time::Duration::from_secs(5),
+        };
+        User::insert(user, pool).await.unwrap();
+    }
+}
