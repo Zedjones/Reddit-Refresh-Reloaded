@@ -16,6 +16,7 @@ refinery = { git = "https://github.com/rust-db/refinery", features = [ "postgres
 chrono = "0.4.11"
 dotenv = "0.15.0"
 anyhow = "1.0.31"
+humantime = "2.0.1"
 
 [build-dependencies]
 log = "0.4.8"

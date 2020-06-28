@@ -2,7 +2,7 @@ CREATE TABLE users (
     token VARCHAR,
     username VARCHAR UNIQUE PRIMARY KEY NOT NULL,
     password VARCHAR NOT NULL,
-    refresh_time INTERVAL
+    refresh_time TIME
 );
 
 CREATE TABLE searches (
