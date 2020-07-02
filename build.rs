@@ -1,6 +1,6 @@
-use refinery::config::Config;
-use log::error;
 use env_logger::Env;
+use log::error;
+use refinery::config::Config;
 
 mod embedded {
     use refinery::embed_migrations;
@@ -15,7 +15,7 @@ fn main() {
         Err(_) => {
             error!("Could not run migrations, is the database online and info correct?");
             std::process::exit(1);
-        },
-        _ => ()
+        }
+        _ => (),
     };
 }

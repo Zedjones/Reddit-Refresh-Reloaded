@@ -33,4 +33,20 @@ impl Search {
             search_term: search.search_term,
         })
     }
+    pub async fn get_search(id: i32, pool: PgPool) -> anyhow::Result<Self> {
+        let mut conn = pool.begin().await?;
+        let search = sqlx::query!(
+            "SELECT id, username, subreddit, search_term FROM searches
+             WHERE id = $1",
+            id
+        )
+        .fetch_one(&mut conn)
+        .await?;
+        Ok(Search {
+            id: search.id,
+            username: search.username,
+            subreddit: search.subreddit,
+            search_term: search.search_term,
+        })
+    }
 }

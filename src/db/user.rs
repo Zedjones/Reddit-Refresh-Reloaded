@@ -37,6 +37,23 @@ impl User {
             token: user.token,
         })
     }
+    pub async fn get_user(username: String, pool: PgPool) -> anyhow::Result<Self> {
+        let midnight = NaiveTime::from_num_seconds_from_midnight(0, 0);
+        let mut conn = pool.begin().await?;
+        let user = sqlx::query!(
+            "SELECT token, username, password, refresh_time FROM users \
+             WHERE username = $1",
+            username
+        )
+        .fetch_one(&mut conn)
+        .await?;
+        Ok(User {
+            username: user.username,
+            password: user.password,
+            refresh_time: (user.refresh_time.unwrap() - midnight).to_std().unwrap(),
+            token: user.token,
+        })
+    }
 }
 
 #[cfg(test)]
@@ -62,6 +79,7 @@ mod tests {
             username: "a_user".to_string(),
             refresh_time: std::time::Duration::from_secs(5),
         };
-        User::insert(user, pool).await.unwrap();
+        let user = User::insert(user, pool).await.unwrap();
+        assert_eq!(std::time::Duration::from_secs(5), user.refresh_time);
     }
 }

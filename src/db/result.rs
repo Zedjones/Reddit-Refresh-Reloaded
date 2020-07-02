@@ -33,4 +33,23 @@ impl Result {
             inserted: result.inserted,
         })
     }
+    pub async fn get_results_by_search(search_id: i32, pool: PgPool) -> anyhow::Result<Vec<Self>> {
+        let mut conn = pool.begin().await?;
+        let results = sqlx::query!(
+            "SELECT id, search_id, title, inserted FROM results \
+             WHERE search_id = $1",
+            search_id
+        )
+        .fetch_all(&mut conn)
+        .await?;
+        Ok(results
+            .into_iter()
+            .map(|result| Result {
+                id: result.id,
+                inserted: result.inserted,
+                search_id: result.search_id,
+                title: result.title,
+            })
+            .collect())
+    }
 }
