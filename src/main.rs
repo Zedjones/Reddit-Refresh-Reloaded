@@ -1,4 +1,5 @@
 pub mod db;
+mod graphql;
 mod notifiers;
 mod routes;
 

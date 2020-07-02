@@ -3,10 +3,10 @@ use sqlx::PgPool;
 use std::time::Duration;
 
 pub(crate) struct User {
-    username: String,
-    password: String,
-    refresh_time: Duration,
-    token: Option<String>,
+    pub username: String,
+    pub password: String,
+    pub refresh_time: Duration,
+    pub token: Option<String>,
 }
 
 pub(crate) struct NewUser {

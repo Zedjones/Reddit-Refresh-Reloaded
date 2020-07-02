@@ -2,10 +2,10 @@ use chrono::{NaiveDateTime, Utc};
 use sqlx::PgPool;
 
 pub(crate) struct Result {
-    id: i32,
-    search_id: i32,
-    title: String,
-    inserted: NaiveDateTime,
+    pub id: i32,
+    pub search_id: i32,
+    pub title: String,
+    pub inserted: NaiveDateTime,
 }
 
 pub(crate) struct NewResult {
@@ -33,7 +33,7 @@ impl Result {
             inserted: result.inserted,
         })
     }
-    pub async fn get_results_by_search(search_id: i32, pool: PgPool) -> anyhow::Result<Vec<Self>> {
+    pub async fn get_results_by_search(search_id: i32, pool: &PgPool) -> anyhow::Result<Vec<Self>> {
         let mut conn = pool.begin().await?;
         let results = sqlx::query!(
             "SELECT id, search_id, title, inserted FROM results \

@@ -18,6 +18,8 @@ dotenv = "0.15.0"
 anyhow = "1.0.31"
 humantime = "2.0.1"
 tokio = { version = "0.2.21", features = [ "macros"] }
+async-graphql = "1.16.4"
+async-graphql-actix-web = "1.16.4"
 
 [build-dependencies]
 log = "0.4.8"
