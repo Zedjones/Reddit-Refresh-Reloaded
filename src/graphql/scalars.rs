@@ -1,8 +1,10 @@
-use async_graphql::{InputValueError, InputValueResult, ScalarType, Value};
+use async_graphql::{InputValueError, InputValueResult, Scalar, ScalarType, Value};
 use chrono::NaiveDateTime;
+use std::time::Duration;
 
-struct TimestampDateTime(NaiveDateTime);
+pub(crate) struct TimestampDateTime(pub NaiveDateTime);
 
+#[Scalar(name = "DateTime")]
 impl ScalarType for TimestampDateTime {
     fn parse(value: Value) -> InputValueResult<Self> {
         if let Value::Int(val) = value {
@@ -15,5 +17,21 @@ impl ScalarType for TimestampDateTime {
     }
     fn to_value(&self) -> Value {
         Value::Int(self.0.timestamp() as i32)
+    }
+}
+
+pub(crate) struct DurationString(pub Duration);
+
+#[Scalar]
+impl ScalarType for DurationString {
+    fn parse(value: Value) -> InputValueResult<Self> {
+        if let Value::String(val) = value {
+            Ok(DurationString(humantime::parse_duration(&val)?))
+        } else {
+            Err(InputValueError::ExpectedType(value))
+        }
+    }
+    fn to_value(&self) -> Value {
+        Value::String(self.0.as_secs().to_string())
     }
 }

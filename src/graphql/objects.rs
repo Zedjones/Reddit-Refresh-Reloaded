@@ -1,7 +1,7 @@
-use crate::db::{user::NewUser, Result, Search, User};
+use crate::db::{Result, Search, User};
+use crate::graphql::scalars::TimestampDateTime;
 use async_graphql::{serde_json::json, Context, ErrorExtensions, FieldResult};
 use sqlx::PgPool;
-use std::time::Duration;
 
 #[async_graphql::Object]
 impl Result {
@@ -11,8 +11,8 @@ impl Result {
     async fn title(&self) -> String {
         self.title.clone()
     }
-    async fn inserted(&self) -> String {
-        self.inserted.to_string()
+    async fn inserted(&self) -> TimestampDateTime {
+        TimestampDateTime { 0: self.inserted }
     }
 }
 
