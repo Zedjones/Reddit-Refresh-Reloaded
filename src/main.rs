@@ -4,13 +4,14 @@ mod notifiers;
 mod routes;
 
 use actix_web::middleware::Logger;
-use actix_web::{web, App, HttpServer};
+use actix_web::{App, HttpServer};
 use dotenv;
 use env_logger::Env;
 use log::error;
 
 use db::timeout_connect;
-use routes::greet;
+use graphql::schema::schema;
+use routes::{graphql as graphql_handler, graphql_playground};
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
@@ -25,9 +26,10 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move || {
         App::new()
             .data(pool.clone())
+            .data(schema())
             .wrap(Logger::default())
-            .route("/", web::get().to(greet))
-            .route("/{name}", web::get().to(greet))
+            .service(graphql_handler)
+            .service(graphql_playground)
     })
     .bind("127.0.0.1:8000")?
     .run()

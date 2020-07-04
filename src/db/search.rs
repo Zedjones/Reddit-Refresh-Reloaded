@@ -1,4 +1,4 @@
-use sqlx::{postgres::PgRow, PgPool, Row};
+use sqlx::PgPool;
 
 pub(crate) struct Search {
     pub id: i32,

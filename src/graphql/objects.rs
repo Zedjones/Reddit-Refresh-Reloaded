@@ -1,5 +1,5 @@
 use crate::db::{Result, Search, User};
-use crate::graphql::scalars::TimestampDateTime;
+use crate::graphql::scalars::{DurationString, TimestampDateTime};
 use async_graphql::{serde_json::json, Context, ErrorExtensions, FieldResult};
 use sqlx::PgPool;
 
@@ -41,7 +41,9 @@ impl User {
     async fn username(&self) -> String {
         self.username.clone()
     }
-    async fn refresh_time(&self) -> u64 {
-        self.refresh_time.as_secs()
+    async fn refresh_time(&self) -> DurationString {
+        DurationString {
+            0: self.refresh_time,
+        }
     }
 }
