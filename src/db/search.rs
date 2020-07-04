@@ -49,7 +49,7 @@ impl Search {
             search_term: search.search_term,
         })
     }
-    pub async fn get_user_searches(username: String, pool: &PgPool) -> anyhow::Result<Vec<Self>> {
+    pub async fn get_user_searches(username: &str, pool: &PgPool) -> anyhow::Result<Vec<Self>> {
         let mut conn = pool.begin().await?;
         let searches = sqlx::query!(
             "SELECT id, username, subreddit, search_term FROM searches \

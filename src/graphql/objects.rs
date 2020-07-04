@@ -46,4 +46,10 @@ impl User {
             0: self.refresh_time,
         }
     }
+    async fn searches(&self, ctx: &Context<'_>) -> FieldResult<Vec<Search>> {
+        let pool = ctx.data::<PgPool>();
+        Search::get_user_searches(&self.username, &pool)
+            .await
+            .map_err(|err| err.extend_with(|_| json!({"code": 500})))
+    }
 }

@@ -18,7 +18,7 @@ pub(crate) struct Query;
 impl Query {
     async fn get_searches(&self, ctx: &Context<'_>, username: String) -> FieldResult<Vec<Search>> {
         let pool = ctx.data::<PgPool>();
-        Search::get_user_searches(username, pool)
+        Search::get_user_searches(&username, pool)
             .await
             .map_err(|err| err.extend_with(|_| json!({"code": 500})))
     }
