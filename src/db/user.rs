@@ -37,7 +37,7 @@ impl User {
             token: user.token,
         })
     }
-    pub async fn get_user(username: String, pool: PgPool) -> anyhow::Result<Self> {
+    pub async fn get_user(username: String, pool: &PgPool) -> anyhow::Result<Self> {
         let midnight = NaiveTime::from_num_seconds_from_midnight(0, 0);
         let mut conn = pool.begin().await?;
         let user = sqlx::query!(

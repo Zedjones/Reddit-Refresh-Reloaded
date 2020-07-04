@@ -32,6 +32,6 @@ impl ScalarType for DurationString {
         }
     }
     fn to_value(&self) -> Value {
-        Value::String(self.0.as_secs().to_string())
+        Value::String(self.0.as_secs().to_string() + "s")
     }
 }
