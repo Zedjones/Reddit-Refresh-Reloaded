@@ -26,7 +26,7 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move || {
         App::new()
             .data(pool.clone())
-            .data(schema())
+            .data(schema(pool.clone()))
             .wrap(Logger::default())
             .service(graphql_handler)
             .service(graphql_playground)
