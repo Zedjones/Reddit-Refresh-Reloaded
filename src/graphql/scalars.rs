@@ -22,7 +22,7 @@ impl ScalarType for TimestampDateTime {
 
 pub(crate) struct DurationString(pub Duration);
 
-#[Scalar]
+#[Scalar(name = "Duration")]
 impl ScalarType for DurationString {
     fn parse(value: Value) -> InputValueResult<Self> {
         if let Value::String(val) = value {
