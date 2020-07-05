@@ -1,8 +1,6 @@
 use crate::db::{user::NewUser, Search, User};
 use crate::graphql::scalars::DurationString;
-use async_graphql::{
-    serde_json::json, Context, EmptyMutation, EmptySubscription, ErrorExtensions, FieldResult,
-};
+use async_graphql::{Context, EmptySubscription, FieldResult};
 use sqlx::PgPool;
 
 pub(crate) type Schema = async_graphql::Schema<Query, Mutation, EmptySubscription>;
@@ -19,15 +17,11 @@ pub(crate) struct Query;
 impl Query {
     async fn get_searches(&self, ctx: &Context<'_>, username: String) -> FieldResult<Vec<Search>> {
         let pool = ctx.data::<PgPool>();
-        Search::get_user_searches(&username, pool)
-            .await
-            .map_err(|err| err.extend_with(|_| json!({"code": 500})))
+        Ok(Search::get_user_searches(&username, pool).await?)
     }
     async fn get_user_info(&self, ctx: &Context<'_>, username: String) -> FieldResult<User> {
         let pool = ctx.data::<PgPool>();
-        User::get_user(username, pool)
-            .await
-            .map_err(|err| err.extend_with(|_| json!({"code": 500})))
+        Ok(User::get_user(username, pool).await?)
     }
 }
 
@@ -43,7 +37,7 @@ impl Mutation {
         refresh_time: DurationString,
     ) -> FieldResult<User> {
         let pool = ctx.data::<PgPool>();
-        User::insert(
+        Ok(User::insert(
             NewUser {
                 username,
                 password,
@@ -51,7 +45,17 @@ impl Mutation {
             },
             pool,
         )
-        .await
-        .map_err(|err| err.extend_with(|_| json!({"code": 500})))
+        .await?)
+    }
+    async fn login(
+        &self,
+        ctx: &Context<'_>,
+        username: String,
+        password: String,
+    ) -> FieldResult<bool> {
+        let pool = ctx.data::<PgPool>();
+        let user = User::get_user(username, pool).await?;
+        let verified = bcrypt::verify(password, &user.password)?;
+        Ok(verified)
     }
 }
