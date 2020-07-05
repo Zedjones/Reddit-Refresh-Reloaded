@@ -10,21 +10,22 @@ pub(crate) struct User {
 }
 
 pub(crate) struct NewUser {
-    username: String,
-    password: String,
-    refresh_time: Duration,
+    pub username: String,
+    pub password: String,
+    pub refresh_time: Duration,
 }
 
 impl User {
-    pub async fn insert(user: NewUser, pool: PgPool) -> anyhow::Result<Self> {
+    pub async fn insert(user: NewUser, pool: &PgPool) -> anyhow::Result<Self> {
         let midnight = NaiveTime::from_num_seconds_from_midnight(0, 0);
         let mut conn = pool.begin().await?;
+        let hashed = bcrypt::hash(user.password, bcrypt::DEFAULT_COST)?;
         let seconds = user.refresh_time.as_secs();
         let user = sqlx::query!(
             "INSERT INTO users (username, password, refresh_time) \
              VALUES ($1, $2, $3) RETURNING token, username, password, refresh_time",
             user.username,
-            user.password,
+            hashed,
             NaiveTime::from_num_seconds_from_midnight(seconds as u32, 0)
         )
         .fetch_one(&mut conn)
@@ -79,7 +80,7 @@ mod tests {
             username: "a_user".to_string(),
             refresh_time: std::time::Duration::from_secs(5),
         };
-        let user = User::insert(user, pool).await.unwrap();
+        let user = User::insert(user, &pool).await.unwrap();
         assert_eq!(std::time::Duration::from_secs(5), user.refresh_time);
     }
 }

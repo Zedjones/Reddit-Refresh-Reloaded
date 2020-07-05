@@ -1,13 +1,14 @@
-use crate::db::{Search, User};
+use crate::db::{user::NewUser, Search, User};
+use crate::graphql::scalars::DurationString;
 use async_graphql::{
     serde_json::json, Context, EmptyMutation, EmptySubscription, ErrorExtensions, FieldResult,
 };
 use sqlx::PgPool;
 
-pub(crate) type Schema = async_graphql::Schema<Query, EmptyMutation, EmptySubscription>;
+pub(crate) type Schema = async_graphql::Schema<Query, Mutation, EmptySubscription>;
 
 pub(crate) fn schema(pool: PgPool) -> Schema {
-    async_graphql::Schema::build(Query, EmptyMutation, EmptySubscription)
+    async_graphql::Schema::build(Query, Mutation, EmptySubscription)
         .data(pool)
         .finish()
 }
@@ -27,5 +28,30 @@ impl Query {
         User::get_user(username, pool)
             .await
             .map_err(|err| err.extend_with(|_| json!({"code": 500})))
+    }
+}
+
+pub(crate) struct Mutation;
+
+#[async_graphql::Object]
+impl Mutation {
+    async fn create_user(
+        &self,
+        ctx: &Context<'_>,
+        username: String,
+        password: String,
+        refresh_time: DurationString,
+    ) -> FieldResult<User> {
+        let pool = ctx.data::<PgPool>();
+        User::insert(
+            NewUser {
+                username,
+                password,
+                refresh_time: refresh_time.0,
+            },
+            pool,
+        )
+        .await
+        .map_err(|err| err.extend_with(|_| json!({"code": 500})))
     }
 }

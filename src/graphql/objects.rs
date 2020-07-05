@@ -12,7 +12,7 @@ impl Result {
         self.title.clone()
     }
     async fn inserted(&self) -> TimestampDateTime {
-        TimestampDateTime(self.inserted)
+        self.inserted.into()
     }
 }
 
@@ -42,7 +42,7 @@ impl User {
         self.username.clone()
     }
     async fn refresh_time(&self) -> DurationString {
-        DurationString(self.refresh_time)
+        self.refresh_time.into()
     }
     async fn searches(&self, ctx: &Context<'_>) -> FieldResult<Vec<Search>> {
         let pool = ctx.data::<PgPool>();

@@ -20,6 +20,12 @@ impl ScalarType for TimestampDateTime {
     }
 }
 
+impl From<NaiveDateTime> for TimestampDateTime {
+    fn from(item: NaiveDateTime) -> Self {
+        TimestampDateTime(item)
+    }
+}
+
 pub(crate) struct DurationString(pub Duration);
 
 #[Scalar(name = "Duration")]
@@ -33,5 +39,11 @@ impl ScalarType for DurationString {
     }
     fn to_value(&self) -> Value {
         Value::String(self.0.as_secs().to_string() + "s")
+    }
+}
+
+impl From<Duration> for DurationString {
+    fn from(item: Duration) -> Self {
+        DurationString(item)
     }
 }
