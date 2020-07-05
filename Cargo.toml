@@ -21,6 +21,7 @@ tokio = { version = "0.2.21", features = [ "macros"] }
 async-graphql = "1.16.5"
 async-graphql-actix-web = "1.16.4"
 bcrypt = "0.8.1"
+actix-web-httpauth = "0.4.1"
 
 [build-dependencies]
 log = "0.4.8"
