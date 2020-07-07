@@ -1,9 +1,7 @@
 use crate::auth::Encoder;
 use crate::db::{user::NewUser, Search, User};
 use crate::graphql::scalars::DurationString;
-use anyhow::anyhow;
 use async_graphql::{Context, EmptySubscription, FieldResult};
-use log::info;
 use sqlx::PgPool;
 
 pub(crate) type Schema = async_graphql::Schema<Query, Mutation, EmptySubscription>;
@@ -13,15 +11,6 @@ pub(crate) fn schema(pool: PgPool, encoder: Encoder) -> Schema {
         .data(encoder)
         .data(pool)
         .finish()
-}
-
-fn check_token(ctx: &Context, username: String) -> anyhow::Result<()> {
-    let token = ctx.data::<Option<String>>();
-    let encoder = ctx.data::<Encoder>();
-    match token {
-        None => Err(anyhow!("No token included in header")),
-        Some(token) => encoder.decode(&token, username).map(|_| ()),
-    }
 }
 
 pub(crate) struct Query;
@@ -59,16 +48,5 @@ impl Mutation {
             pool,
         )
         .await?)
-    }
-    async fn login(
-        &self,
-        ctx: &Context<'_>,
-        username: String,
-        password: String,
-    ) -> FieldResult<bool> {
-        let pool = ctx.data::<PgPool>();
-        let user = User::get_user(username, pool).await?;
-        let verified = bcrypt::verify(password, &user.password)?;
-        Ok(verified)
     }
 }
