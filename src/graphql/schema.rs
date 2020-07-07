@@ -23,7 +23,7 @@ impl Query {
     }
     async fn get_user_info(&self, ctx: &Context<'_>, username: String) -> FieldResult<User> {
         let pool = ctx.data::<PgPool>();
-        Ok(User::get_user(username, pool).await?)
+        Ok(User::get_user(&username, pool).await?)
     }
 }
 

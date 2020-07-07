@@ -38,7 +38,7 @@ impl User {
             token: user.token,
         })
     }
-    pub async fn get_user(username: String, pool: &PgPool) -> anyhow::Result<Self> {
+    pub async fn get_user(username: &str, pool: &PgPool) -> anyhow::Result<Self> {
         let midnight = NaiveTime::from_num_seconds_from_midnight(0, 0);
         let mut conn = pool.begin().await?;
         let user = sqlx::query!(
@@ -54,6 +54,10 @@ impl User {
             refresh_time: (user.refresh_time.unwrap() - midnight).to_std().unwrap(),
             token: user.token,
         })
+    }
+    pub async fn verify_login(username: &str, password: &str, pool: &PgPool) -> anyhow::Result<bool> {
+        let user = User::get_user(username, pool).await?;
+        Ok(bcrypt::verify(password, &user.password)?)
     }
 }
 

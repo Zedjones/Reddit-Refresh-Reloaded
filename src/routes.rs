@@ -1,8 +1,29 @@
 use crate::graphql::schema::Schema;
-use actix_web::{get, http::header::Header, post, web, HttpRequest, HttpResponse, Result};
+use crate::db::User;
+use actix_identity::Identity;
+use actix_web::{get, http::header::Header, post, web, HttpRequest, HttpResponse, Result, error::ErrorUnauthorized};
 use actix_web_httpauth::headers::authorization::{Authorization, Bearer};
 use async_graphql::http::{playground_source, GraphQLPlaygroundConfig};
 use async_graphql_actix_web::{GQLRequest, GQLResponse};
+use serde::{Serialize, Deserialize};
+use sqlx::PgPool;
+
+#[derive(Serialize, Deserialize)]
+pub struct Login {
+    username: String,
+    password: String,
+}
+
+pub(crate) async fn login(
+    id: Identity,
+    login: web::Json<Login>,
+    pool: web::Data<PgPool>,
+) -> Result<HttpResponse> {
+    if User::verify_login(&login.username, &login.password, &pool).await.map_err(|err| ErrorUnauthorized(err))? {
+
+    }
+    todo!()
+}
 
 // TODO: Take in the JWT token here, and then call `.data(token)` on the builder
 // to provide the token as context to the individual query
