@@ -1,14 +1,27 @@
+use crate::auth::Encoder;
 use crate::db::{user::NewUser, Search, User};
 use crate::graphql::scalars::DurationString;
+use anyhow::anyhow;
 use async_graphql::{Context, EmptySubscription, FieldResult};
+use log::info;
 use sqlx::PgPool;
 
 pub(crate) type Schema = async_graphql::Schema<Query, Mutation, EmptySubscription>;
 
-pub(crate) fn schema(pool: PgPool) -> Schema {
+pub(crate) fn schema(pool: PgPool, encoder: Encoder) -> Schema {
     async_graphql::Schema::build(Query, Mutation, EmptySubscription)
+        .data(encoder)
         .data(pool)
         .finish()
+}
+
+fn check_token(ctx: &Context, username: String) -> anyhow::Result<()> {
+    let token = ctx.data::<Option<String>>();
+    let encoder = ctx.data::<Encoder>();
+    match token {
+        None => Err(anyhow!("No token included in header")),
+        Some(token) => encoder.decode(&token, username).map(|_| ()),
+    }
 }
 
 pub(crate) struct Query;

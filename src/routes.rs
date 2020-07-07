@@ -1,6 +1,6 @@
 use crate::graphql::schema::Schema;
-use actix_web::{get, post, web, HttpResponse, Result};
-use actix_web_httpauth::extractors::bearer::BearerAuth;
+use actix_web::{get, http::header::Header, post, web, HttpRequest, HttpResponse, Result};
+use actix_web_httpauth::headers::authorization::{Authorization, Bearer};
 use async_graphql::http::{playground_source, GraphQLPlaygroundConfig};
 use async_graphql_actix_web::{GQLRequest, GQLResponse};
 
@@ -8,15 +8,15 @@ use async_graphql_actix_web::{GQLRequest, GQLResponse};
 // to provide the token as context to the individual query
 #[post("/graphql")]
 pub(crate) async fn graphql(
-    auth: BearerAuth,
     schema: web::Data<Schema>,
     req: GQLRequest,
+    http_req: HttpRequest,
 ) -> GQLResponse {
-    req.into_inner()
-        .data(String::from(auth.token()))
-        .execute(&schema)
-        .await
-        .into()
+    let auth = Authorization::<Bearer>::parse(&http_req).ok();
+    let bearer = auth.map(|auth| auth.into_scheme().clone());
+    let cow_token = bearer.map(|bearer| bearer.token().to_owned());
+    let token = cow_token.map(|cow| String::from(cow));
+    req.into_inner().data(token).execute(&schema).await.into()
 }
 
 #[get("/graphql")]
