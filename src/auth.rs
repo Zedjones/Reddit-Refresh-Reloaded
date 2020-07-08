@@ -1,8 +1,25 @@
+use actix_http::error::Error as HttpError;
+use actix_web::dev::ServiceRequest;
+use actix_web_httpauth::extractors::bearer::BearerAuth;
 use jsonwebtoken::{
     decode as jwt_decode, encode as jwt_encode, DecodingKey, EncodingKey, Header, Validation,
 };
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
+
+pub async fn validate_token(
+    req: ServiceRequest,
+    bearer: BearerAuth,
+) -> Result<ServiceRequest, HttpError> {
+    let token = bearer.token();
+    let encoder = req.app_data::<Encoder>().unwrap();
+    if let Err(err) = encoder.decode(token) {
+        log::info!("{}", err);
+        Err(actix_web::error::ErrorUnauthorized(err))
+    } else {
+        Ok(req)
+    }
+}
 
 #[derive(Clone)]
 pub struct Encoder {
@@ -12,7 +29,7 @@ pub struct Encoder {
 
 #[derive(Serialize, Deserialize)]
 pub(crate) struct Claims {
-    pub exp: usize,
+    pub exp: i64,
     pub sub: String,
 }
 
@@ -24,15 +41,11 @@ impl Encoder {
             &EncodingKey::from_secret(self.secret.as_bytes()),
         )?)
     }
-    pub(crate) fn decode(&self, token: &str, username: String) -> anyhow::Result<Claims> {
-        let validation = Validation {
-            sub: Some(username),
-            ..Validation::default()
-        };
+    pub(crate) fn decode(&self, token: &str) -> anyhow::Result<Claims> {
         Ok(jwt_decode::<Claims>(
             token,
             &DecodingKey::from_secret(self.secret.as_bytes()),
-            &validation,
+            &Validation::default(),
         )
         .map(|token_data| token_data.claims)?)
     }

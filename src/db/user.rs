@@ -55,7 +55,11 @@ impl User {
             token: user.token,
         })
     }
-    pub async fn verify_login(username: &str, password: &str, pool: &PgPool) -> anyhow::Result<bool> {
+    pub async fn verify_login(
+        username: &str,
+        password: &str,
+        pool: &PgPool,
+    ) -> anyhow::Result<bool> {
         let user = User::get_user(username, pool).await?;
         Ok(bcrypt::verify(password, &user.password)?)
     }
@@ -74,11 +78,9 @@ mod tests {
     fail if run twice in a row without clearing the DB.
     */
     async fn insert_user() {
-        std::env::set_var(
-            "DATABASE_URL",
-            "postgresql://zedjones:changeMe@localhost/postgres",
-        );
-        let pool = timeout_connect().await.unwrap();
+        let pool = timeout_connect("postgresql://zedjones:changeMe@localhost/postgres")
+            .await
+            .unwrap();
         let user = NewUser {
             password: "a_password".to_string(),
             username: "a_user".to_string(),

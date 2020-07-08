@@ -1,11 +1,15 @@
-use crate::graphql::schema::Schema;
+use crate::auth::{Claims, Encoder};
 use crate::db::User;
+use crate::graphql::schema::Schema;
 use actix_identity::Identity;
-use actix_web::{get, http::header::Header, post, web, HttpRequest, HttpResponse, Result, error::ErrorUnauthorized};
+use actix_web::{
+    error::ErrorUnauthorized, http::header::Header, post, web, HttpRequest, HttpResponse, Result,
+};
 use actix_web_httpauth::headers::authorization::{Authorization, Bearer};
 use async_graphql::http::{playground_source, GraphQLPlaygroundConfig};
 use async_graphql_actix_web::{GQLRequest, GQLResponse};
-use serde::{Serialize, Deserialize};
+use chrono::{Duration, Local};
+use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
 
 #[derive(Serialize, Deserialize)]
@@ -14,20 +18,33 @@ pub struct Login {
     password: String,
 }
 
+#[post("/login")]
 pub(crate) async fn login(
     id: Identity,
     login: web::Json<Login>,
+    encoder: web::Data<Encoder>,
     pool: web::Data<PgPool>,
 ) -> Result<HttpResponse> {
-    if User::verify_login(&login.username, &login.password, &pool).await.map_err(|err| ErrorUnauthorized(err))? {
-
+    if User::verify_login(&login.username, &login.password, &pool)
+        .await
+        .map_err(|err| ErrorUnauthorized(err))?
+    {
+        let now = Local::now();
+        let claims = Claims {
+            exp: (now + Duration::from_std(encoder.expiration_time).unwrap()).timestamp(),
+            sub: login.username.clone(),
+        };
+        let token = encoder
+            .encode(&claims)
+            .map_err(|err| ErrorUnauthorized(err))?;
+        log::info!("{}", token);
+        id.remember(token);
     }
-    todo!()
+    Ok(HttpResponse::Ok().into())
 }
 
 // TODO: Take in the JWT token here, and then call `.data(token)` on the builder
 // to provide the token as context to the individual query
-#[post("/graphql")]
 pub(crate) async fn graphql(
     schema: web::Data<Schema>,
     req: GQLRequest,
@@ -40,7 +57,6 @@ pub(crate) async fn graphql(
     req.into_inner().data(token).execute(&schema).await.into()
 }
 
-#[get("/graphql")]
 pub(crate) async fn graphql_playground() -> Result<HttpResponse> {
     Ok(HttpResponse::Ok()
         .content_type("text/html; charset=utf-8")
