@@ -49,4 +49,29 @@ impl Mutation {
         )
         .await?)
     }
+    /*
+    pub(crate) async fn login(
+        &self,
+        ctx: &Context<'_>,
+        username: String,
+        password: String,
+    ) -> FieldResult<String> {
+        let pool = ctx.data::<PgPool>();
+        let encoder = ctx.data::<Encoder>();
+        if User::verify_login(&username, &password, &pool).await? {
+            let now = Local::now();
+            let claims = Claims {
+                exp: (now + Duration::from_std(encoder.expiration_time).unwrap()).timestamp(),
+                sub: username.clone(),
+            };
+            let token = encoder.encode(&claims)?;
+            log::info!("{}", token);
+            Ok(token)
+        } else {
+            Err(FieldError::from(anyhow::anyhow!(
+                "Incorrect username or password"
+            )))
+        }
+    }
+    */
 }

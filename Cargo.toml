@@ -25,7 +25,6 @@ async-graphql-actix-web = "1.16.4"
 bcrypt = "0.8.1"
 actix-web-httpauth = "0.4.1"
 jsonwebtoken = "7.2.0"
-actix-identity = "0.2.1"
 envy = "0.4.1"
 
 [build-dependencies]

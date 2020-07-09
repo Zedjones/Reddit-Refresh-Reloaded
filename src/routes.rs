@@ -1,11 +1,8 @@
 use crate::auth::{Claims, Encoder};
 use crate::db::User;
 use crate::graphql::schema::Schema;
-use actix_identity::Identity;
-use actix_web::{
-    error::ErrorUnauthorized, http::header::Header, post, web, HttpRequest, HttpResponse, Result,
-};
-use actix_web_httpauth::headers::authorization::{Authorization, Bearer};
+use actix_web::{error::ErrorUnauthorized, post, web, HttpResponse, Result};
+use actix_web_httpauth::extractors::bearer::BearerAuth;
 use async_graphql::http::{playground_source, GraphQLPlaygroundConfig};
 use async_graphql_actix_web::{GQLRequest, GQLResponse};
 use chrono::{Duration, Local};
@@ -20,10 +17,9 @@ pub struct Login {
 
 #[post("/login")]
 pub(crate) async fn login(
-    id: Identity,
     login: web::Json<Login>,
-    encoder: web::Data<Encoder>,
     pool: web::Data<PgPool>,
+    encoder: web::Data<Encoder>,
 ) -> Result<HttpResponse> {
     if User::verify_login(&login.username, &login.password, &pool)
         .await
@@ -38,23 +34,30 @@ pub(crate) async fn login(
             .encode(&claims)
             .map_err(|err| ErrorUnauthorized(err))?;
         log::info!("{}", token);
-        id.remember(token);
+        Ok(HttpResponse::Ok().body(token))
+    } else {
+        Err(ErrorUnauthorized(anyhow::anyhow!(
+            "Invalid username or password provided"
+        )))
     }
-    Ok(HttpResponse::Ok().into())
 }
 
-// TODO: Take in the JWT token here, and then call `.data(token)` on the builder
-// to provide the token as context to the individual query
 pub(crate) async fn graphql(
     schema: web::Data<Schema>,
+    encoder: web::Data<Encoder>,
     req: GQLRequest,
-    http_req: HttpRequest,
-) -> GQLResponse {
-    let auth = Authorization::<Bearer>::parse(&http_req).ok();
-    let bearer = auth.map(|auth| auth.into_scheme().clone());
-    let cow_token = bearer.map(|bearer| bearer.token().to_owned());
-    let token = cow_token.map(|cow| String::from(cow));
-    req.into_inner().data(token).execute(&schema).await.into()
+    bearer: BearerAuth,
+) -> Result<GQLResponse> {
+    let token = bearer.token();
+    let claims = encoder
+        .decode(token)
+        .map_err(|err| ErrorUnauthorized(err))?;
+    Ok(req
+        .into_inner()
+        .data(claims.sub)
+        .execute(&schema)
+        .await
+        .into())
 }
 
 pub(crate) async fn graphql_playground() -> Result<HttpResponse> {

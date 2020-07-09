@@ -4,7 +4,6 @@ mod graphql;
 mod notifiers;
 mod routes;
 
-use actix_identity::{CookieIdentityPolicy, IdentityService};
 use actix_web::middleware::Logger;
 use actix_web::{web, App, HttpServer};
 use actix_web_httpauth::middleware::HttpAuthentication;
@@ -14,17 +13,12 @@ use log::error;
 use serde::Deserialize;
 use std::time::Duration;
 
-use crate::auth::validate_token;
-use auth::Encoder;
+use auth::{validate_token, Encoder};
 use db::timeout_connect;
 use graphql::schema::schema;
 use routes::{graphql as graphql_handler, graphql_playground, login};
 
 const SECONDS_IN_DAY: u64 = 86_400;
-
-fn default_domain() -> String {
-    "localhost:8000".to_string()
-}
 
 fn default_expiration() -> Duration {
     Duration::from_secs(2 * SECONDS_IN_DAY)
@@ -36,8 +30,6 @@ struct Config {
     jwt_secret: String,
     #[serde(default = "default_expiration")]
     jwt_expiration: Duration,
-    #[serde(default = "default_domain")]
-    domain: String,
 }
 
 #[actix_rt::main]
@@ -63,24 +55,12 @@ async fn main() -> std::io::Result<()> {
         secret: config.jwt_secret.clone(),
     };
 
-    let cookie_secret_key = config.jwt_secret.clone();
-    let domain = config.domain.clone();
-    let auth_age = chrono::Duration::from_std(config.jwt_expiration).unwrap();
-
     HttpServer::new(move || {
         App::new()
             .data(pool.clone())
             .data(schema(pool.clone(), encoder.clone()))
             .data(encoder.clone())
             .wrap(Logger::default())
-            .wrap(IdentityService::new(
-                CookieIdentityPolicy::new(cookie_secret_key.as_bytes())
-                    .name("auth")
-                    .path("/")
-                    .domain(&domain)
-                    .max_age_time(auth_age)
-                    .secure(false),
-            ))
             .service(
                 web::resource("/graphql")
                     .route(web::post().to(graphql_handler))
