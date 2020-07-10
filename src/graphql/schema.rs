@@ -1,5 +1,5 @@
 use crate::auth::Encoder;
-use crate::db::{user::NewUser, Search, User};
+use crate::db::{search::NewSearch, user::NewUser, Search, User};
 use crate::graphql::scalars::DurationString;
 use async_graphql::{Context, EmptySubscription, FieldResult};
 use sqlx::PgPool;
@@ -17,12 +17,14 @@ pub(crate) struct Query;
 
 #[async_graphql::Object]
 impl Query {
-    async fn get_searches(&self, ctx: &Context<'_>, username: String) -> FieldResult<Vec<Search>> {
+    async fn get_searches(&self, ctx: &Context<'_>) -> FieldResult<Vec<Search>> {
         let pool = ctx.data::<PgPool>();
+        let username = ctx.data::<String>();
         Ok(Search::get_user_searches(&username, pool).await?)
     }
-    async fn get_user_info(&self, ctx: &Context<'_>, username: String) -> FieldResult<User> {
+    async fn get_user_info(&self, ctx: &Context<'_>) -> FieldResult<User> {
         let pool = ctx.data::<PgPool>();
+        let username = ctx.data::<String>();
         Ok(User::get_user(&username, pool).await?)
     }
 }
@@ -48,6 +50,29 @@ impl Mutation {
             pool,
         )
         .await?)
+    }
+    async fn add_search(
+        &self,
+        ctx: &Context<'_>,
+        subreddit: String,
+        search_term: String,
+    ) -> FieldResult<Search> {
+        let pool = ctx.data::<PgPool>();
+        let username = ctx.data::<String>();
+        Ok(Search::insert(
+            NewSearch {
+                username: username.clone(),
+                search_term,
+                subreddit,
+            },
+            pool,
+        )
+        .await?)
+    }
+    async fn delete_search(&self, ctx: &Context<'_>, id: i32) -> FieldResult<u64> {
+        let pool = ctx.data::<PgPool>();
+        let username = ctx.data::<String>();
+        Ok(Search::delete(id, username.clone(), pool).await?)
     }
     /*
     pub(crate) async fn login(

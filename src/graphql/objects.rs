@@ -27,6 +27,9 @@ impl Search {
     async fn subreddit(&self) -> String {
         self.subreddit.clone()
     }
+    async fn search_term(&self) -> String {
+        self.search_term.clone()
+    }
     async fn results(&self, ctx: &Context<'_>) -> FieldResult<Vec<Result>> {
         let pool = ctx.data::<PgPool>();
         // Get results, return a FieldError if there is an error

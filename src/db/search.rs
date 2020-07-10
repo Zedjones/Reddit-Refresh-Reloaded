@@ -8,13 +8,13 @@ pub(crate) struct Search {
 }
 
 pub(crate) struct NewSearch {
-    username: String,
-    subreddit: String,
-    search_term: String,
+    pub username: String,
+    pub subreddit: String,
+    pub search_term: String,
 }
 
 impl Search {
-    pub async fn insert(search: NewSearch, pool: PgPool) -> anyhow::Result<Self> {
+    pub async fn insert(search: NewSearch, pool: &PgPool) -> anyhow::Result<Self> {
         let mut conn = pool.begin().await?;
         let search = sqlx::query!(
             "INSERT INTO searches (username, subreddit, search_term) \
@@ -32,6 +32,23 @@ impl Search {
             subreddit: search.subreddit,
             search_term: search.search_term,
         })
+    }
+    pub async fn delete(id: i32, username: String, pool: &PgPool) -> anyhow::Result<u64> {
+        let mut conn = pool.begin().await?;
+        let deleted = sqlx::query!(
+            "DELETE FROM searches WHERE id = $1 AND username = $2",
+            id,
+            username
+        )
+        .execute(&mut conn)
+        .await?;
+
+        conn.commit().await?;
+        if deleted == 0 {
+            Err(anyhow::anyhow!("Invalid id or id is owned by another user"))
+        } else {
+            Ok(deleted)
+        }
     }
     pub async fn get_search(id: i32, pool: PgPool) -> anyhow::Result<Self> {
         let mut conn = pool.begin().await?;

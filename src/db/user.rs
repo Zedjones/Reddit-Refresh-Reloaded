@@ -6,7 +6,6 @@ pub(crate) struct User {
     pub username: String,
     pub password: String,
     pub refresh_time: Duration,
-    pub token: Option<String>,
 }
 
 pub(crate) struct NewUser {
@@ -23,7 +22,7 @@ impl User {
         let seconds = user.refresh_time.as_secs();
         let user = sqlx::query!(
             "INSERT INTO users (username, password, refresh_time) \
-             VALUES ($1, $2, $3) RETURNING token, username, password, refresh_time",
+             VALUES ($1, $2, $3) RETURNING username, password, refresh_time",
             user.username,
             hashed,
             NaiveTime::from_num_seconds_from_midnight(seconds as u32, 0)
@@ -35,14 +34,13 @@ impl User {
             username: user.username,
             password: user.password,
             refresh_time: (user.refresh_time.unwrap() - midnight).to_std().unwrap(),
-            token: user.token,
         })
     }
     pub async fn get_user(username: &str, pool: &PgPool) -> anyhow::Result<Self> {
         let midnight = NaiveTime::from_num_seconds_from_midnight(0, 0);
         let mut conn = pool.begin().await?;
         let user = sqlx::query!(
-            "SELECT token, username, password, refresh_time FROM users \
+            "SELECT username, password, refresh_time FROM users \
              WHERE username = $1",
             username
         )
@@ -52,7 +50,6 @@ impl User {
             username: user.username,
             password: user.password,
             refresh_time: (user.refresh_time.unwrap() - midnight).to_std().unwrap(),
-            token: user.token,
         })
     }
     pub async fn verify_login(

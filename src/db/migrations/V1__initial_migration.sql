@@ -1,5 +1,4 @@
 CREATE TABLE users (
-    token VARCHAR,
     username VARCHAR UNIQUE PRIMARY KEY NOT NULL,
     password VARCHAR NOT NULL,
     refresh_time TIME
@@ -10,6 +9,7 @@ CREATE TABLE searches (
     username VARCHAR NOT NULL,
     subreddit VARCHAR NOT NULL,
     search_term VARCHAR NOT NULL,
+    CONSTRAINT unique_keys UNIQUE (username, subreddit, search_term),
     FOREIGN KEY (username) REFERENCES users(username)
 );
 
