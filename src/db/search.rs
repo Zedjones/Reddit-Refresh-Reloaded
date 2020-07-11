@@ -35,6 +35,9 @@ impl Search {
     }
     pub async fn delete(id: i32, username: String, pool: &PgPool) -> anyhow::Result<u64> {
         let mut conn = pool.begin().await?;
+        let _results_deleted = sqlx::query!("DELETE FROM results WHERE search_id = $1", id,)
+            .execute(&mut conn)
+            .await?;
         let deleted = sqlx::query!(
             "DELETE FROM searches WHERE id = $1 AND username = $2",
             id,
@@ -43,10 +46,10 @@ impl Search {
         .execute(&mut conn)
         .await?;
 
-        conn.commit().await?;
         if deleted == 0 {
             Err(anyhow::anyhow!("Invalid id or id is owned by another user"))
         } else {
+            conn.commit().await?;
             Ok(deleted)
         }
     }

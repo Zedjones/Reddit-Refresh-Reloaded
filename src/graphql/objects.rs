@@ -1,6 +1,6 @@
 use crate::db::{Result, Search, User};
 use crate::graphql::scalars::{DurationString, TimestampDateTime};
-use async_graphql::{serde_json::json, Context, ErrorExtensions, FieldResult};
+use async_graphql::{Context, FieldResult};
 use sqlx::PgPool;
 
 #[async_graphql::Object]
@@ -32,10 +32,7 @@ impl Search {
     }
     async fn results(&self, ctx: &Context<'_>) -> FieldResult<Vec<Result>> {
         let pool = ctx.data::<PgPool>();
-        // Get results, return a FieldError if there is an error
-        Result::get_results_by_search(self.id, pool)
-            .await
-            .map_err(|err| err.extend_with(|_| json!({"code": 500})))
+        Ok(Result::get_results_by_search(self.id, pool).await?)
     }
 }
 
@@ -49,8 +46,6 @@ impl User {
     }
     async fn searches(&self, ctx: &Context<'_>) -> FieldResult<Vec<Search>> {
         let pool = ctx.data::<PgPool>();
-        Search::get_user_searches(&self.username, &pool)
-            .await
-            .map_err(|err| err.extend_with(|_| json!({"code": 500})))
+        Ok(Search::get_user_searches(&self.username, &pool).await?)
     }
 }
