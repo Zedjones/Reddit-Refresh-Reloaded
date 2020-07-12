@@ -22,6 +22,15 @@ impl Query {
         let username = ctx.data::<String>();
         Ok(Search::get_user_searches(&username, pool).await?)
     }
+    async fn get_searches_for_subreddit(
+        &self,
+        ctx: &Context<'_>,
+        subreddit: String,
+    ) -> FieldResult<Vec<Search>> {
+        let pool = ctx.data::<PgPool>();
+        let username = ctx.data::<String>();
+        Ok(Search::get_for_subreddit(&username, &subreddit, pool).await?)
+    }
     async fn get_user_info(&self, ctx: &Context<'_>) -> FieldResult<User> {
         let pool = ctx.data::<PgPool>();
         let username = ctx.data::<String>();
