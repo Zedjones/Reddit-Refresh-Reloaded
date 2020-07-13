@@ -1,8 +1,22 @@
-use crate::auth::Encoder;
+use crate::auth::{Claims, Encoder};
 use crate::db::{search::NewSearch, user::NewUser, Search, User};
 use crate::graphql::scalars::DurationString;
-use async_graphql::{Context, EmptySubscription, FieldResult};
+use async_graphql::{serde_json::json, Context, EmptySubscription, ErrorExtensions, FieldResult};
+use chrono::{Duration, Local};
 use sqlx::PgPool;
+
+async fn verify_token(ctx: &Context<'_>) -> FieldResult<String> {
+    let token = ctx.data::<Option<String>>();
+    let encoder = ctx.data::<Encoder>();
+    {
+        if let Some(token) = token {
+            encoder.decode(&token).map(|claims| claims.sub)
+        } else {
+            Err(anyhow::anyhow!("No token provided"))
+        }
+    }
+    .map_err(|err| err.extend_with(|_| json!({"code": 401})))
+}
 
 pub(crate) type Schema = async_graphql::Schema<Query, Mutation, EmptySubscription>;
 
@@ -19,7 +33,7 @@ pub(crate) struct Query;
 impl Query {
     async fn get_searches(&self, ctx: &Context<'_>) -> FieldResult<Vec<Search>> {
         let pool = ctx.data::<PgPool>();
-        let username = ctx.data::<String>();
+        let username = verify_token(ctx).await?;
         Ok(Search::get_user_searches(&username, pool).await?)
     }
     async fn get_searches_for_subreddit(
@@ -28,12 +42,12 @@ impl Query {
         subreddit: String,
     ) -> FieldResult<Vec<Search>> {
         let pool = ctx.data::<PgPool>();
-        let username = ctx.data::<String>();
+        let username = verify_token(ctx).await?;
         Ok(Search::get_for_subreddit(&username, &subreddit, pool).await?)
     }
     async fn get_user_info(&self, ctx: &Context<'_>) -> FieldResult<User> {
         let pool = ctx.data::<PgPool>();
-        let username = ctx.data::<String>();
+        let username = verify_token(ctx).await?;
         Ok(User::get_user(&username, pool).await?)
     }
 }
@@ -67,7 +81,7 @@ impl Mutation {
         search_term: String,
     ) -> FieldResult<Search> {
         let pool = ctx.data::<PgPool>();
-        let username = ctx.data::<String>();
+        let username = verify_token(ctx).await?;
         Ok(Search::insert(
             NewSearch {
                 username: username.clone(),
@@ -80,10 +94,9 @@ impl Mutation {
     }
     async fn delete_search(&self, ctx: &Context<'_>, id: i32) -> FieldResult<u64> {
         let pool = ctx.data::<PgPool>();
-        let username = ctx.data::<String>();
+        let username = verify_token(ctx).await?;
         Ok(Search::delete(id, username.clone(), pool).await?)
     }
-    /*
     pub(crate) async fn login(
         &self,
         ctx: &Context<'_>,
@@ -102,10 +115,7 @@ impl Mutation {
             log::info!("{}", token);
             Ok(token)
         } else {
-            Err(FieldError::from(anyhow::anyhow!(
-                "Incorrect username or password"
-            )))
+            Err(anyhow::anyhow!("Incorrect username or password"))?
         }
     }
-    */
 }

@@ -1,25 +1,8 @@
-use actix_http::error::Error as HttpError;
-use actix_web::dev::ServiceRequest;
-use actix_web_httpauth::extractors::bearer::BearerAuth;
 use jsonwebtoken::{
     decode as jwt_decode, encode as jwt_encode, DecodingKey, EncodingKey, Header, Validation,
 };
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
-
-pub async fn validate_token(
-    req: ServiceRequest,
-    bearer: BearerAuth,
-) -> Result<ServiceRequest, HttpError> {
-    let token = bearer.token();
-    let encoder = req.app_data::<Encoder>().unwrap();
-    if let Err(err) = encoder.decode(token) {
-        log::info!("{}", err);
-        Err(actix_web::error::ErrorUnauthorized(err))
-    } else {
-        Ok(req)
-    }
-}
 
 #[derive(Clone)]
 pub struct Encoder {

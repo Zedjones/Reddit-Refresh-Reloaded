@@ -5,18 +5,17 @@ mod notifiers;
 mod routes;
 
 use actix_web::middleware::Logger;
-use actix_web::{web, App, HttpServer};
-use actix_web_httpauth::middleware::HttpAuthentication;
+use actix_web::{App, HttpServer};
 use dotenv;
 use env_logger::Env;
 use log::error;
 use serde::Deserialize;
 use std::time::Duration;
 
-use auth::{validate_token, Encoder};
+use auth::Encoder;
 use db::timeout_connect;
 use graphql::schema::schema;
-use routes::{graphql as graphql_handler, graphql_playground, login};
+use routes::{graphql as graphql_handler, graphql_playground};
 
 const SECONDS_IN_DAY: u64 = 86_400;
 
@@ -61,13 +60,8 @@ async fn main() -> std::io::Result<()> {
             .data(schema(pool.clone(), encoder.clone()))
             .data(encoder.clone())
             .wrap(Logger::default())
-            .service(
-                web::resource("/graphql")
-                    .route(web::post().to(graphql_handler))
-                    .route(web::get().to(graphql_playground))
-                    .wrap(HttpAuthentication::bearer(validate_token)),
-            )
-            .service(login)
+            .service(graphql_handler)
+            .service(graphql_playground)
     })
     .bind("127.0.0.1:8000")?
     .run()
