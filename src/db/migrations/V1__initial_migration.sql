@@ -14,9 +14,30 @@ CREATE TABLE searches (
 );
 
 CREATE TABLE results (
-    id SERIAL UNIQUE PRIMARY KEY NOT NULL,
+    id INTEGER UNIQUE PRIMARY KEY NOT NULL,
     inserted TIMESTAMP NOT NULL,
     search_id INTEGER NOT NULL,
     title VARCHAR NOT NULL,
     FOREIGN KEY (search_id) REFERENCES searches(id)
 );
+
+CREATE OR REPLACE FUNCTION notify_result_changes()
+RETURNS trigger AS $$
+BEGIN
+  PERFORM pg_notify(
+    'results_changes',
+    json_build_object(
+      'operation', TG_OP,
+      'record', row_to_json(NEW)
+    )::text
+  );
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER results_changes
+AFTER INSERT OR UPDATE OR DELETE
+ON results
+FOR EACH ROW
+EXECUTE PROCEDURE notify_result_changes();

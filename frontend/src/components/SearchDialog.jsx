@@ -2,6 +2,8 @@ import React, { forwardRef } from 'react';
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
+import useMediaQuery from '@material-ui/core/useMediaQuery';
+import { useTheme } from '@material-ui/core/styles';
 import MaterialTable from 'material-table';
 import PropTypes from 'prop-types';
 
@@ -50,11 +52,12 @@ export default function SearchDialog(props) {
   const [state, setState] = React.useState({
     columns: [
       { title: 'Name', field: 'name' },
-      { title: 'Surname', field: 'surname' },
-      { title: 'Birth Year', field: 'birthYear', type: 'numeric' },
+      { title: 'Surname', field: 'surname', editable: false },
+      { title: 'Birth Year', field: 'birthYear', type: 'numeric', editable: false },
       {
         title: 'Birth Place',
         field: 'birthCity',
+        editable: false,
         lookup: { 34: 'İstanbul', 63: 'Şanlıurfa' },
       },
     ],
@@ -68,8 +71,16 @@ export default function SearchDialog(props) {
       },
     ],
   });
+  const theme = useTheme();
+  const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
   return (
-    <Dialog open={open} maxWidth="md" fullWidth onClose={() => setOpen(false)}>
+    <Dialog
+      open={open}
+      maxWidth="md"
+      fullWidth
+      onClose={() => setOpen(false)}
+      fullScreen={fullScreen}
+    >
       <MaterialTable
         icons={tableIcons}
         title={subreddit}

@@ -32,3 +32,6 @@
 ## Authentication
  - Since we're not relying on Pushbullet, we'll have to figure out how to do authentication without that OAuth.
    - JWT tokens will probably be the easiest for our needs
+
+## Display of searches and results
+ - Show subreddit and some searches on card, and then in Dialog show searches, as well as a dropdown for results
