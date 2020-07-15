@@ -41,3 +41,24 @@ AFTER INSERT OR UPDATE OR DELETE
 ON results
 FOR EACH ROW
 EXECUTE PROCEDURE notify_result_changes();
+
+CREATE OR REPLACE FUNCTION notify_search_changes()
+RETURNS trigger AS $$
+BEGIN
+  PERFORM pg_notify(
+    'searches_changes',
+    json_build_object(
+      'operation', TG_OP,
+      'record', row_to_json(NEW)
+    )::text
+  );
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER searches_changes
+AFTER INSERT OR UPDATE OR DELETE
+ON searches
+FOR EACH ROW
+EXECUTE PROCEDURE notify_search_changes();

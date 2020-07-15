@@ -1,5 +1,7 @@
+use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
 
+#[derive(Serialize, Deserialize)]
 pub(crate) struct Search {
     pub id: i32,
     pub username: String,

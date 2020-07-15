@@ -1,9 +1,16 @@
 use crate::auth::{Claims, Encoder};
 use crate::db::{search::NewSearch, user::NewUser, Search, User};
 use crate::graphql::scalars::DurationString;
-use async_graphql::{serde_json::json, Context, EmptySubscription, ErrorExtensions, FieldResult};
+use async_graphql::{
+    serde_json, serde_json::json, Context, ErrorExtensions, FieldError, FieldResult,
+};
 use chrono::{Duration, Local};
-use sqlx::PgPool;
+use futures::{Stream, StreamExt};
+use serde::{Deserialize, Serialize};
+use sqlx::{postgres::PgListener, PgPool};
+use std::boxed::Box;
+
+type DbUrl = String;
 
 async fn verify_token(ctx: &Context<'_>) -> FieldResult<String> {
     let token = ctx.data::<Option<String>>();
@@ -18,12 +25,13 @@ async fn verify_token(ctx: &Context<'_>) -> FieldResult<String> {
     .map_err(|err| err.extend_with(|_| json!({"code": 401})))
 }
 
-pub(crate) type Schema = async_graphql::Schema<Query, Mutation, EmptySubscription>;
+pub(crate) type Schema = async_graphql::Schema<Query, Mutation, Subscription>;
 
-pub(crate) fn schema(pool: PgPool, encoder: Encoder) -> Schema {
-    async_graphql::Schema::build(Query, Mutation, EmptySubscription)
+pub(crate) fn schema(pool: PgPool, encoder: Encoder, db_url: DbUrl) -> Schema {
+    async_graphql::Schema::build(Query, Mutation, Subscription)
         .data(encoder)
         .data(pool)
+        .data(db_url)
         .finish()
 }
 
@@ -117,5 +125,47 @@ impl Mutation {
         } else {
             Err(anyhow::anyhow!("Incorrect username or password"))?
         }
+    }
+}
+
+pub(crate) struct Subscription;
+
+#[async_graphql::Enum]
+#[derive(Serialize, Deserialize)]
+enum ChangeType {
+    Insert,
+    Update,
+    Delete,
+}
+
+#[async_graphql::SimpleObject]
+#[derive(Serialize, Deserialize)]
+struct SearchChange {
+    pub operation: ChangeType,
+    pub record: Search,
+}
+
+#[async_graphql::Subscription]
+impl Subscription {
+    async fn search_updates(
+        &self,
+        ctx: &Context<'_>,
+    ) -> impl Stream<Item = Result<SearchChange, FieldError>> {
+        let url = ctx.data::<DbUrl>();
+        let username = verify_token(ctx).await.unwrap();
+        let mut listener = PgListener::new(&url).await.unwrap();
+        listener.listen("searches_changes").await.unwrap();
+        let stream = listener.into_stream();
+        let update_stream = stream
+            .filter_map(|result| async move { result.ok().map(|not| String::from(not.payload())) })
+            .map(move |data| (data, username.clone()))
+            .filter_map(|(payload, username)| async move {
+                serde_json::from_str::<SearchChange>(&payload)
+                    .ok()
+                    .filter(|search| search.record.username == username)
+                    .map(|search| Ok(search))
+            });
+
+        update_stream
     }
 }

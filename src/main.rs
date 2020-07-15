@@ -5,7 +5,7 @@ mod notifiers;
 mod routes;
 
 use actix_web::middleware::Logger;
-use actix_web::{App, HttpServer};
+use actix_web::{guard, web, App, HttpServer};
 use dotenv;
 use env_logger::Env;
 use log::error;
@@ -15,7 +15,7 @@ use std::time::Duration;
 use auth::Encoder;
 use db::timeout_connect;
 use graphql::schema::schema;
-use routes::{graphql as graphql_handler, graphql_playground};
+use routes::{graphql as graphql_handler, graphql_playground, graphql_ws};
 
 const SECONDS_IN_DAY: u64 = 86_400;
 
@@ -54,12 +54,20 @@ async fn main() -> std::io::Result<()> {
         secret: config.jwt_secret.clone(),
     };
 
+    let db_url = config.database_url.clone();
+
     HttpServer::new(move || {
         App::new()
             .data(pool.clone())
-            .data(schema(pool.clone(), encoder.clone()))
+            .data(schema(pool.clone(), encoder.clone(), db_url.clone()))
             .data(encoder.clone())
             .wrap(Logger::default())
+            .service(
+                web::resource("/subscriptions")
+                    .guard(guard::Get())
+                    .guard(guard::Header("upgrade", "websocket"))
+                    .to(graphql_ws),
+            )
             .service(graphql_handler)
             .service(graphql_playground)
     })

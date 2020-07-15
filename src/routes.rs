@@ -1,9 +1,10 @@
 use crate::graphql::schema::Schema;
 use actix_web::http::header::Header;
 use actix_web::{get, post, web, HttpRequest, HttpResponse, Result};
+use actix_web_actors::ws;
 use actix_web_httpauth::headers::authorization::{Authorization, Bearer};
 use async_graphql::http::{playground_source, GraphQLPlaygroundConfig};
-use async_graphql_actix_web::{GQLRequest, GQLResponse};
+use async_graphql_actix_web::{GQLRequest, GQLResponse, WSSubscription};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
@@ -32,4 +33,12 @@ pub(crate) async fn graphql_playground() -> Result<HttpResponse> {
         .body(playground_source(
             GraphQLPlaygroundConfig::new("/graphql").subscription_endpoint("/subscriptions"),
         )))
+}
+
+pub(crate) async fn graphql_ws(
+    schema: web::Data<Schema>,
+    req: HttpRequest,
+    payload: web::Payload,
+) -> Result<HttpResponse> {
+    ws::start_with_protocols(WSSubscription::new(&schema), &["graphql-ws"], &req, payload)
 }
