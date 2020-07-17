@@ -61,6 +61,7 @@ async fn main() -> std::io::Result<()> {
             .data(pool.clone())
             .data(schema(pool.clone(), encoder.clone(), db_url.clone()))
             .data(encoder.clone())
+            .data(db_url.clone())
             .wrap(Logger::default())
             .service(
                 web::resource("/subscriptions")

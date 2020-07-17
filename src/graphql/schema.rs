@@ -12,7 +12,7 @@ use std::boxed::Box;
 
 type DbUrl = String;
 
-async fn verify_token(ctx: &Context<'_>) -> FieldResult<String> {
+pub(crate) fn verify_token(ctx: &Context<'_>) -> FieldResult<String> {
     let token = ctx.data::<Option<String>>();
     let encoder = ctx.data::<Encoder>();
     {
@@ -35,13 +35,20 @@ pub(crate) fn schema(pool: PgPool, encoder: Encoder, db_url: DbUrl) -> Schema {
         .finish()
 }
 
+pub(crate) fn sub_schema(db_url: DbUrl, username: String) -> Schema {
+    async_graphql::Schema::build(Query, Mutation, Subscription)
+        .data(db_url)
+        .data(username)
+        .finish()
+}
+
 pub(crate) struct Query;
 
 #[async_graphql::Object]
 impl Query {
     async fn get_searches(&self, ctx: &Context<'_>) -> FieldResult<Vec<Search>> {
         let pool = ctx.data::<PgPool>();
-        let username = verify_token(ctx).await?;
+        let username = verify_token(ctx)?;
         Ok(Search::get_user_searches(&username, pool).await?)
     }
     async fn get_searches_for_subreddit(
@@ -50,12 +57,12 @@ impl Query {
         subreddit: String,
     ) -> FieldResult<Vec<Search>> {
         let pool = ctx.data::<PgPool>();
-        let username = verify_token(ctx).await?;
+        let username = verify_token(ctx)?;
         Ok(Search::get_for_subreddit(&username, &subreddit, pool).await?)
     }
     async fn get_user_info(&self, ctx: &Context<'_>) -> FieldResult<User> {
         let pool = ctx.data::<PgPool>();
-        let username = verify_token(ctx).await?;
+        let username = verify_token(ctx)?;
         Ok(User::get_user(&username, pool).await?)
     }
 }
@@ -89,7 +96,7 @@ impl Mutation {
         search_term: String,
     ) -> FieldResult<Search> {
         let pool = ctx.data::<PgPool>();
-        let username = verify_token(ctx).await?;
+        let username = verify_token(ctx)?;
         Ok(Search::insert(
             NewSearch {
                 username: username.clone(),
@@ -102,7 +109,7 @@ impl Mutation {
     }
     async fn delete_search(&self, ctx: &Context<'_>, id: i32) -> FieldResult<u64> {
         let pool = ctx.data::<PgPool>();
-        let username = verify_token(ctx).await?;
+        let username = verify_token(ctx)?;
         Ok(Search::delete(id, username.clone(), pool).await?)
     }
     pub(crate) async fn login(
@@ -151,8 +158,9 @@ impl Subscription {
         &self,
         ctx: &Context<'_>,
     ) -> impl Stream<Item = Result<SearchChange, FieldError>> {
+        // TODO: Convert URL and Username into their own types that aren't just aliases
         let url = ctx.data::<DbUrl>();
-        let username = verify_token(ctx).await.unwrap();
+        let username = String::from(ctx.data::<String>());
         let mut listener = PgListener::new(&url).await.unwrap();
         listener.listen("searches_changes").await.unwrap();
         let stream = listener.into_stream();

@@ -1,16 +1,25 @@
-use crate::graphql::schema::Schema;
+use crate::auth::Encoder;
+use crate::graphql::schema::{sub_schema, Schema};
 use actix_web::http::header::Header;
-use actix_web::{get, post, web, HttpRequest, HttpResponse, Result};
+use actix_web::{error::ErrorUnauthorized, get, post, web, HttpRequest, HttpResponse, Result};
 use actix_web_actors::ws;
+use actix_web_httpauth::extractors::bearer::BearerAuth;
 use actix_web_httpauth::headers::authorization::{Authorization, Bearer};
 use async_graphql::http::{playground_source, GraphQLPlaygroundConfig};
+use async_graphql::{serde_json::json, ErrorExtensions};
 use async_graphql_actix_web::{GQLRequest, GQLResponse, WSSubscription};
+use futures::{Future, Stream, StreamExt};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
 pub struct Login {
     username: String,
     password: String,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct TokenParams {
+    access_token: Option<String>,
 }
 
 #[post("/graphql")]
@@ -35,10 +44,36 @@ pub(crate) async fn graphql_playground() -> Result<HttpResponse> {
         )))
 }
 
+fn handle_ws_params(
+    encoder: Encoder,
+    val: async_graphql::serde_json::Value,
+) -> async_graphql::FieldResult<async_graphql::Data> {
+    let params: TokenParams = async_graphql::serde_json::from_value(val)?;
+    let mut data = async_graphql::Data::default();
+    let username = {
+        if let Some(token) = params.access_token {
+            encoder.decode(&token).map(|claims| claims.sub)
+        } else {
+            Err(anyhow::anyhow!("No token provided"))
+        }
+    }
+    .map_err(|err| err.extend_with(|_| json!({"code": 401})))?;
+    data.insert(username);
+    Ok(data)
+}
+
 pub(crate) async fn graphql_ws(
+    encoder: web::Data<Encoder>,
     schema: web::Data<Schema>,
     req: HttpRequest,
     payload: web::Payload,
 ) -> Result<HttpResponse> {
-    ws::start_with_protocols(WSSubscription::new(&schema), &["graphql-ws"], &req, payload)
+    let encoder = encoder.as_ref().clone();
+    ws::start_with_protocols(
+        WSSubscription::new(&schema)
+            .init_context_data(move |payload_val| handle_ws_params(encoder.clone(), payload_val)),
+        &["graphql-ws"],
+        &req,
+        payload,
+    )
 }
