@@ -10,7 +10,9 @@ use serde::{Deserialize, Serialize};
 use sqlx::{postgres::PgListener, PgPool};
 use std::boxed::Box;
 
-type DbUrl = String;
+pub(crate) struct DbUrl(pub String);
+
+pub(crate) struct Username(pub String);
 
 pub(crate) fn verify_token(ctx: &Context<'_>) -> FieldResult<String> {
     let token = ctx.data::<Option<String>>();
@@ -27,11 +29,11 @@ pub(crate) fn verify_token(ctx: &Context<'_>) -> FieldResult<String> {
 
 pub(crate) type Schema = async_graphql::Schema<Query, Mutation, Subscription>;
 
-pub(crate) fn schema(pool: PgPool, encoder: Encoder, db_url: DbUrl) -> Schema {
+pub(crate) fn schema(pool: PgPool, encoder: Encoder, db_url: String) -> Schema {
     async_graphql::Schema::build(Query, Mutation, Subscription)
         .data(encoder)
         .data(pool)
-        .data(db_url)
+        .data(DbUrl(db_url))
         .finish()
 }
 
@@ -138,7 +140,8 @@ impl Mutation {
 pub(crate) struct Subscription;
 
 #[async_graphql::Enum]
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "UPPERCASE")]
 enum ChangeType {
     Insert,
     Update,
@@ -146,7 +149,7 @@ enum ChangeType {
 }
 
 #[async_graphql::SimpleObject]
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 struct SearchChange {
     pub operation: ChangeType,
     pub record: Search,
@@ -158,10 +161,9 @@ impl Subscription {
         &self,
         ctx: &Context<'_>,
     ) -> impl Stream<Item = Result<SearchChange, FieldError>> {
-        // TODO: Convert URL and Username into their own types that aren't just aliases
         let url = ctx.data::<DbUrl>();
-        let username = String::from(ctx.data::<String>());
-        let mut listener = PgListener::new(&url).await.unwrap();
+        let username = String::from(&ctx.data::<Username>().0);
+        let mut listener = PgListener::new(&url.0).await.unwrap();
         listener.listen("searches_changes").await.unwrap();
         let stream = listener.into_stream();
         let update_stream = stream

@@ -1,5 +1,5 @@
 use crate::auth::Encoder;
-use crate::graphql::schema::{sub_schema, Schema};
+use crate::graphql::schema::{sub_schema, Schema, Username};
 use actix_web::http::header::Header;
 use actix_web::{error::ErrorUnauthorized, get, post, web, HttpRequest, HttpResponse, Result};
 use actix_web_actors::ws;
@@ -58,7 +58,7 @@ fn handle_ws_params(
         }
     }
     .map_err(|err| err.extend_with(|_| json!({"code": 401})))?;
-    data.insert(username);
+    data.insert(Username(username));
     Ok(data)
 }
 

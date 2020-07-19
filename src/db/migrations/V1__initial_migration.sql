@@ -45,15 +45,26 @@ EXECUTE PROCEDURE notify_result_changes();
 CREATE OR REPLACE FUNCTION notify_search_changes()
 RETURNS trigger AS $$
 BEGIN
-  PERFORM pg_notify(
+  IF TG_OP = 'DELETE' THEN
+    PERFORM pg_notify(
+      'searches_changes',
+      json_build_object(
+        'operation', TG_OP,
+        'record', row_to_json(OLD)
+      )::text);
+
+      RETURN OLD;
+  ELSE
+    PERFORM pg_notify(
     'searches_changes',
     json_build_object(
       'operation', TG_OP,
       'record', row_to_json(NEW)
-    )::text
-  );
+    )::text);
 
-  RETURN NEW;
+    RETURN NEW;
+  END IF;
+
 END;
 $$ LANGUAGE plpgsql;
 
