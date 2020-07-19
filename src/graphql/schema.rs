@@ -37,13 +37,6 @@ pub(crate) fn schema(pool: PgPool, encoder: Encoder, db_url: String) -> Schema {
         .finish()
 }
 
-pub(crate) fn sub_schema(db_url: DbUrl, username: String) -> Schema {
-    async_graphql::Schema::build(Query, Mutation, Subscription)
-        .data(db_url)
-        .data(username)
-        .finish()
-}
-
 pub(crate) struct Query;
 
 #[async_graphql::Object]

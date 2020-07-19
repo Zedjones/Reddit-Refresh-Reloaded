@@ -1,14 +1,12 @@
 use crate::auth::Encoder;
-use crate::graphql::schema::{sub_schema, Schema, Username};
+use crate::graphql::schema::{Schema, Username};
 use actix_web::http::header::Header;
-use actix_web::{error::ErrorUnauthorized, get, post, web, HttpRequest, HttpResponse, Result};
+use actix_web::{get, post, web, HttpRequest, HttpResponse, Result};
 use actix_web_actors::ws;
-use actix_web_httpauth::extractors::bearer::BearerAuth;
 use actix_web_httpauth::headers::authorization::{Authorization, Bearer};
 use async_graphql::http::{playground_source, GraphQLPlaygroundConfig};
 use async_graphql::{serde_json::json, ErrorExtensions};
 use async_graphql_actix_web::{GQLRequest, GQLResponse, WSSubscription};
-use futures::{Future, Stream, StreamExt};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
