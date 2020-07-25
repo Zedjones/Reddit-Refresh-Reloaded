@@ -9,8 +9,8 @@ pub(crate) struct Result {
 }
 
 pub(crate) struct NewResult {
-    search_id: i32,
-    title: String,
+    pub search_id: i32,
+    pub title: String,
 }
 
 impl Result {

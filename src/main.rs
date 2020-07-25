@@ -3,6 +3,7 @@ pub mod db;
 mod graphql;
 mod notifiers;
 mod routes;
+mod scanner;
 
 use actix_web::middleware::Logger;
 use actix_web::{guard, web, App, HttpServer};
