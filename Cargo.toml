@@ -20,7 +20,7 @@ dotenv = "0.15.0"
 futures = "0.3.5"
 anyhow = "1.0.31"
 humantime = "2.0.1"
-tokio = { version = "0.2.21", features = [ "macros"] }
+tokio = { version = "0.2.21", features = [ "macros", "time" ] }
 serde = { version = "1.0.114", features = [ "derive" ] }
 async-graphql = "1.16.5"
 async-graphql-actix-web = "1.16.4"

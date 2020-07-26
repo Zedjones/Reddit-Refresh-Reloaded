@@ -57,6 +57,15 @@ async fn main() -> std::io::Result<()> {
 
     let db_url = config.database_url.clone();
 
+    let test_search = db::Search {
+        id: 100,
+        search_term: "topre".to_string(),
+        subreddit: "mechanicalkeyboards".to_string(),
+        username: "zedjones".to_string(),
+    };
+    let scanner = scanner::Scanner::new(pool.clone(), test_search).await;
+    let results_future = scanner.check_results();
+
     HttpServer::new(move || {
         App::new()
             .data(pool.clone())

@@ -6,23 +6,23 @@ use sqlx::PgPool;
 
 use std::time::Duration;
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 struct ChildResult {
     title: String,
     permalink: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 struct Child {
     data: ChildResult,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 struct Children {
     children: Vec<Child>,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 struct SearchResult {
     data: Children,
 }
@@ -62,12 +62,16 @@ impl Scanner {
             .await?
             .json::<SearchResult>()
             .await?;
+        println!("{:?}", response);
         Ok(NewResult {
             search_id: 32323,
             title: "adsf".to_string(),
         })
     }
     pub async fn check_results(&self) {
-        while self.running {}
+        while self.running {
+            tokio::time::delay_for(self.refresh_time).await;
+            self.search_reddit().await;
+        }
     }
 }
