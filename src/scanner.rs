@@ -37,8 +37,7 @@ pub(crate) struct Scanner {
 }
 
 impl Scanner {
-    pub async fn new(pool: PgPool, search: Search) -> Self {
-        let user = User::get_user(&search.username, &pool).await.unwrap();
+    pub async fn new(pool: PgPool, search: Search, refresh_time: Duration) -> Self {
         let client = Client::new();
         let search_url = format!(
             "https://old.reddit.com/r/{}/search.json?q={}&sort=new&restrict_sr=on",
@@ -51,7 +50,7 @@ impl Scanner {
             search_url,
             client,
             running: true,
-            refresh_time: user.refresh_time,
+            refresh_time,
         }
     }
     async fn search_reddit(&self) -> anyhow::Result<NewResult> {

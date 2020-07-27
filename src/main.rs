@@ -33,7 +33,7 @@ struct Config {
 }
 
 #[actix_rt::main]
-async fn main() -> std::io::Result<()> {
+async fn main() -> anyhow::Result<()> {
     dotenv::dotenv().ok();
     env_logger::from_env(Env::default().default_filter_or("info")).init();
 
@@ -63,10 +63,10 @@ async fn main() -> std::io::Result<()> {
         subreddit: "mechanicalkeyboards".to_string(),
         username: "zedjones".to_string(),
     };
-    let scanner = scanner::Scanner::new(pool.clone(), test_search).await;
+    let scanner = scanner::Scanner::new(pool.clone(), test_search, Duration::from_secs(5)).await;
     let results_future = scanner.check_results();
 
-    HttpServer::new(move || {
+    let server_future = HttpServer::new(move || {
         App::new()
             .data(pool.clone())
             .data(schema(pool.clone(), encoder.clone(), db_url.clone()))
@@ -83,6 +83,9 @@ async fn main() -> std::io::Result<()> {
             .service(graphql_playground)
     })
     .bind("127.0.0.1:8000")?
-    .run()
-    .await
+    .run();
+
+    let (server_res, _) = tokio::join!(server_future, results_future);
+    server_res?;
+    Ok(())
 }
