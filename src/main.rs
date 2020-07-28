@@ -11,6 +11,7 @@ use dotenv;
 use env_logger::Env;
 use log::error;
 use serde::Deserialize;
+use std::sync::Arc;
 use std::time::Duration;
 
 use auth::Encoder;
@@ -64,9 +65,11 @@ async fn main() -> anyhow::Result<()> {
         username: "zedjones".to_string(),
     };
     let scanner = scanner::Scanner::new(pool.clone(), test_search, Duration::from_secs(5)).await;
-    let results_future = scanner.check_results();
+    let scanner_arc = Arc::from(scanner);
+    let scanner_clone = scanner_arc.clone();
+    actix_rt::spawn(async move { scanner_clone.check_results().await });
 
-    let server_future = HttpServer::new(move || {
+    Ok(HttpServer::new(move || {
         App::new()
             .data(pool.clone())
             .data(schema(pool.clone(), encoder.clone(), db_url.clone()))
@@ -83,9 +86,6 @@ async fn main() -> anyhow::Result<()> {
             .service(graphql_playground)
     })
     .bind("127.0.0.1:8000")?
-    .run();
-
-    let (server_res, _) = tokio::join!(server_future, results_future);
-    server_res?;
-    Ok(())
+    .run()
+    .await?)
 }

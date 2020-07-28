@@ -1,31 +1,10 @@
-use crate::db::{result::NewResult, Search, User};
+use super::data::SearchResult;
+use crate::db::{result::NewResult, Search};
 
 use reqwest::Client;
-use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
 
 use std::time::Duration;
-
-#[derive(Deserialize, Debug)]
-struct ChildResult {
-    title: String,
-    permalink: String,
-}
-
-#[derive(Deserialize, Debug)]
-struct Child {
-    data: ChildResult,
-}
-
-#[derive(Deserialize, Debug)]
-struct Children {
-    children: Vec<Child>,
-}
-
-#[derive(Deserialize, Debug)]
-struct SearchResult {
-    data: Children,
-}
 
 pub(crate) struct Scanner {
     pool: PgPool,
@@ -61,7 +40,7 @@ impl Scanner {
             .await?
             .json::<SearchResult>()
             .await?;
-        println!("{:?}", response);
+        log::info!("{:?}", response);
         Ok(NewResult {
             search_id: 32323,
             title: "adsf".to_string(),
