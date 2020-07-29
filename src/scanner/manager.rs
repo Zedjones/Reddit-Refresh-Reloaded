@@ -18,16 +18,10 @@ impl Manager {
         let mut scanner_map: HashMap<i32, AbortHandle> = HashMap::new();
         for (search, refresh_time) in searches {
             let id = search.id;
-            let scanner = Arc::from(Mutex::from(
-                Scanner::new(pool.clone(), search, refresh_time).await,
-            ));
+            let scanner = Scanner::new(pool.clone(), search, refresh_time).await;
             let (handle, registration) = AbortHandle::new_pair();
             actix_rt::spawn(async move {
-                let _ = Abortable::new(
-                    scanner.clone().lock().unwrap().check_results(),
-                    registration,
-                )
-                .await;
+                let _ = Abortable::new(scanner.check_results(), registration).await;
             });
             let handle_clone = handle.clone();
             actix_rt::spawn(async move {
