@@ -18,6 +18,7 @@ use auth::Encoder;
 use db::timeout_connect;
 use graphql::schema::schema;
 use routes::{graphql as graphql_handler, graphql_playground, graphql_ws};
+use scanner::manager::Manager;
 
 const SECONDS_IN_DAY: u64 = 86_400;
 
@@ -57,16 +58,7 @@ async fn main() -> anyhow::Result<()> {
     };
 
     let db_url = config.database_url.clone();
-
-    let test_search = db::Search {
-        id: 100,
-        search_term: "topre".to_string(),
-        subreddit: "mechanicalkeyboards".to_string(),
-        username: "zedjones".to_string(),
-    };
-    let scanner = scanner::Scanner::new(pool.clone(), test_search, Duration::from_secs(5)).await;
-    let scanner_arc = Arc::from(scanner);
-    actix_rt::spawn(async move { scanner_arc.clone().check_results().await });
+    let manager = Manager::new(pool.clone()).await?;
 
     Ok(HttpServer::new(move || {
         App::new()

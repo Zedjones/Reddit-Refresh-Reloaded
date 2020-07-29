@@ -52,4 +52,7 @@ impl Scanner {
             self.search_reddit().await;
         }
     }
+    pub fn stop(&mut self) {
+        self.running = false;
+    }
 }
