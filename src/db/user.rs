@@ -52,6 +52,21 @@ impl User {
             refresh_time: (user.refresh_time.unwrap() - midnight).to_std().unwrap(),
         })
     }
+    pub async fn get_users(pool: &PgPool) -> anyhow::Result<Vec<Self>> {
+        let midnight = NaiveTime::from_num_seconds_from_midnight(0, 0);
+        let mut conn = pool.begin().await?;
+        let users: Vec<Self> = sqlx::query!("SELECT username, password, refresh_time FROM users")
+            .fetch_all(&mut conn)
+            .await?
+            .into_iter()
+            .map(|user| User {
+                username: user.username,
+                password: user.password,
+                refresh_time: (user.refresh_time.unwrap() - midnight).to_std().unwrap(),
+            })
+            .collect();
+        Ok(users)
+    }
     pub async fn verify_login(
         username: &str,
         password: &str,

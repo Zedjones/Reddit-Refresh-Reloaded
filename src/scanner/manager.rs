@@ -1,33 +1,27 @@
 use crate::db::Search;
 use crate::scanner::Scanner;
 
-use std::boxed::Box;
 use std::collections::HashMap;
-use std::time::Duration;
+use std::sync::Arc;
 
-use futures::stream::FuturesUnordered;
-use futures::Future;
 use sqlx::PgPool;
 
 pub struct Manager {
     pool: PgPool,
-    scanner_map: HashMap<Search, Scanner>,
-    check_results_futures: FuturesUnordered<Box<dyn Future<Output = ()>>>,
+    scanner_map: HashMap<i32, Arc<Scanner>>,
 }
 
 impl Manager {
-    async fn new(pool: PgPool) -> Self {
-        let test_search = Search {
-            id: 100,
-            search_term: "topre".to_string(),
-            subreddit: "mechanicalkeyboards".to_string(),
-            username: "zedjones".to_string(),
-        };
-        let scanner = Scanner::new(pool.clone(), test_search, Duration::from_secs(5)).await;
-        Manager {
-            pool,
-            scanner_map: HashMap::new(),
-            check_results_futures: FuturesUnordered::new(),
+    async fn new(pool: PgPool) -> anyhow::Result<Self> {
+        let searches = Search::get_searches(&pool).await?;
+        let mut scanner_map: HashMap<i32, Arc<Scanner>> = HashMap::new();
+        for (search, refresh_time) in searches {
+            let id = search.id;
+            let scanner = Arc::from(Scanner::new(pool.clone(), search, refresh_time).await);
+            let scanner_copy = scanner.clone();
+            actix_rt::spawn(async move { scanner_copy.clone().check_results().await });
+            scanner_map.insert(id, scanner);
         }
+        Ok(Manager { pool, scanner_map })
     }
 }

@@ -66,8 +66,7 @@ async fn main() -> anyhow::Result<()> {
     };
     let scanner = scanner::Scanner::new(pool.clone(), test_search, Duration::from_secs(5)).await;
     let scanner_arc = Arc::from(scanner);
-    let scanner_clone = scanner_arc.clone();
-    actix_rt::spawn(async move { scanner_clone.check_results().await });
+    actix_rt::spawn(async move { scanner_arc.clone().check_results().await });
 
     Ok(HttpServer::new(move || {
         App::new()

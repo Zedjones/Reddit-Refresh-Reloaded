@@ -1,5 +1,7 @@
+use chrono::NaiveTime;
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
+use std::time::Duration;
 
 #[derive(Serialize, Deserialize, Debug, Hash, PartialEq, Eq)]
 pub(crate) struct Search {
@@ -70,6 +72,32 @@ impl Search {
             subreddit: search.subreddit,
             search_term: search.search_term,
         })
+    }
+    pub async fn get_searches(pool: &PgPool) -> anyhow::Result<Vec<(Self, Duration)>> {
+        let mut conn = pool.begin().await?;
+        let midnight = NaiveTime::from_num_seconds_from_midnight(0, 0);
+        let searches: Vec<(Self, Duration)> = sqlx::query!(
+            "SELECT id, searches.username, subreddit, search_term, refresh_time 
+                FROM searches
+                INNER JOIN users
+                ON searches.username = users.username"
+        )
+        .fetch_all(&mut conn)
+        .await?
+        .into_iter()
+        .map(|search| {
+            (
+                Search {
+                    id: search.id,
+                    username: search.username,
+                    subreddit: search.subreddit,
+                    search_term: search.search_term,
+                },
+                (search.refresh_time.unwrap() - midnight).to_std().unwrap(),
+            )
+        })
+        .collect();
+        Ok(searches)
     }
     pub async fn get_for_subreddit(
         username: &str,
