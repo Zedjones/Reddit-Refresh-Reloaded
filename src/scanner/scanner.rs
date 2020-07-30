@@ -16,7 +16,7 @@ pub(crate) struct Scanner {
 }
 
 impl Scanner {
-    pub async fn new(pool: PgPool, search: Search, refresh_time: Duration) -> Self {
+    pub fn new(pool: PgPool, search: Search, refresh_time: Duration) -> Self {
         let client = Client::new();
         let search_url = format!(
             "https://old.reddit.com/r/{}/search.json?q={}&sort=new&restrict_sr=on",

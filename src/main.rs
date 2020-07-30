@@ -58,7 +58,7 @@ async fn main() -> anyhow::Result<()> {
     };
 
     let db_url = config.database_url.clone();
-    let manager = Manager::new(pool.clone()).await?;
+    let manager = Manager::new(pool.clone(), db_url.clone()).await?;
 
     Ok(HttpServer::new(move || {
         App::new()

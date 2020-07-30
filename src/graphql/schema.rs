@@ -135,7 +135,7 @@ pub(crate) struct Subscription;
 #[async_graphql::Enum]
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "UPPERCASE")]
-enum ChangeType {
+pub(crate) enum ChangeType {
     Insert,
     Update,
     Delete,
@@ -143,7 +143,7 @@ enum ChangeType {
 
 #[async_graphql::SimpleObject]
 #[derive(Serialize, Deserialize, Debug)]
-struct SearchChange {
+pub(crate) struct SearchChange {
     pub operation: ChangeType,
     pub record: Search,
 }
