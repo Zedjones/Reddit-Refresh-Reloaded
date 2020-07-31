@@ -59,6 +59,11 @@ async fn main() -> anyhow::Result<()> {
 
     let db_url = config.database_url.clone();
     let manager = Manager::new(pool.clone(), db_url.clone()).await?;
+    actix_rt::spawn(async move {
+        if let Err(error) = manager.monitor().await {
+            log::error!("{}", error);
+        }
+    });
 
     Ok(HttpServer::new(move || {
         App::new()
