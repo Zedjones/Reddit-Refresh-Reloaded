@@ -31,7 +31,7 @@ impl Search {
         self.search_term.clone()
     }
     async fn results(&self, ctx: &Context<'_>) -> FieldResult<Vec<Result>> {
-        let pool = ctx.data::<PgPool>();
+        let pool = ctx.data::<PgPool>().unwrap();
         Ok(Result::get_results_by_search(self.id, pool).await?)
     }
 }
@@ -45,7 +45,7 @@ impl User {
         self.refresh_time.into()
     }
     async fn searches(&self, ctx: &Context<'_>) -> FieldResult<Vec<Search>> {
-        let pool = ctx.data::<PgPool>();
+        let pool = ctx.data::<PgPool>().unwrap();
         Ok(Search::get_user_searches(&self.username, &pool).await?)
     }
 }

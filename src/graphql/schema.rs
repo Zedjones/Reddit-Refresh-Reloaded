@@ -1,9 +1,7 @@
 use crate::auth::{Claims, Encoder};
 use crate::db::{search::NewSearch, user::NewUser, Search, User};
 use crate::graphql::scalars::DurationString;
-use async_graphql::{
-    serde_json, serde_json::json, Context, ErrorExtensions, FieldError, FieldResult,
-};
+use async_graphql::{Context, Enum, ErrorExtensions, FieldError, FieldResult, SimpleObject};
 use chrono::{Duration, Local};
 use futures::{Stream, StreamExt};
 use serde::{Deserialize, Serialize};
@@ -15,8 +13,8 @@ pub(crate) struct DbUrl(pub String);
 pub(crate) struct Username(pub String);
 
 pub(crate) fn verify_token(ctx: &Context<'_>) -> FieldResult<String> {
-    let token = ctx.data::<Option<String>>();
-    let encoder = ctx.data::<Encoder>();
+    let token = ctx.data::<Option<String>>().unwrap();
+    let encoder = ctx.data::<Encoder>().unwrap();
     {
         if let Some(token) = token {
             encoder.decode(&token).map(|claims| claims.sub)
@@ -24,7 +22,7 @@ pub(crate) fn verify_token(ctx: &Context<'_>) -> FieldResult<String> {
             Err(anyhow::anyhow!("No token provided"))
         }
     }
-    .map_err(|err| err.extend_with(|_| json!({"code": 401})))
+    .map_err(|err| err.extend_with(|_, e| e.set("code", 401)))
 }
 
 pub(crate) type Schema = async_graphql::Schema<Query, Mutation, Subscription>;
@@ -42,7 +40,7 @@ pub(crate) struct Query;
 #[async_graphql::Object]
 impl Query {
     async fn get_searches(&self, ctx: &Context<'_>) -> FieldResult<Vec<Search>> {
-        let pool = ctx.data::<PgPool>();
+        let pool = ctx.data::<PgPool>().unwrap();
         let username = verify_token(ctx)?;
         Ok(Search::get_user_searches(&username, pool).await?)
     }
@@ -51,12 +49,12 @@ impl Query {
         ctx: &Context<'_>,
         subreddit: String,
     ) -> FieldResult<Vec<Search>> {
-        let pool = ctx.data::<PgPool>();
+        let pool = ctx.data::<PgPool>().unwrap();
         let username = verify_token(ctx)?;
         Ok(Search::get_for_subreddit(&username, &subreddit, pool).await?)
     }
     async fn get_user_info(&self, ctx: &Context<'_>) -> FieldResult<User> {
-        let pool = ctx.data::<PgPool>();
+        let pool = ctx.data::<PgPool>().unwrap();
         let username = verify_token(ctx)?;
         Ok(User::get_user(&username, pool).await?)
     }
@@ -73,7 +71,7 @@ impl Mutation {
         password: String,
         refresh_time: DurationString,
     ) -> FieldResult<User> {
-        let pool = ctx.data::<PgPool>();
+        let pool = ctx.data::<PgPool>().unwrap();
         Ok(User::insert(
             NewUser {
                 username,
@@ -90,7 +88,7 @@ impl Mutation {
         subreddit: String,
         search_term: String,
     ) -> FieldResult<Search> {
-        let pool = ctx.data::<PgPool>();
+        let pool = ctx.data::<PgPool>().unwrap();
         let username = verify_token(ctx)?;
         Ok(Search::insert(
             NewSearch {
@@ -103,7 +101,7 @@ impl Mutation {
         .await?)
     }
     async fn delete_search(&self, ctx: &Context<'_>, id: i32) -> FieldResult<u64> {
-        let pool = ctx.data::<PgPool>();
+        let pool = ctx.data::<PgPool>().unwrap();
         let username = verify_token(ctx)?;
         Ok(Search::delete(id, username.clone(), pool).await?)
     }
@@ -113,8 +111,8 @@ impl Mutation {
         username: String,
         password: String,
     ) -> FieldResult<String> {
-        let pool = ctx.data::<PgPool>();
-        let encoder = ctx.data::<Encoder>();
+        let pool = ctx.data::<PgPool>().unwrap();
+        let encoder = ctx.data::<Encoder>().unwrap();
         if User::verify_login(&username, &password, &pool).await? {
             let now = Local::now();
             let claims = Claims {
@@ -132,8 +130,7 @@ impl Mutation {
 
 pub(crate) struct Subscription;
 
-#[async_graphql::Enum]
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Copy, Clone, Eq, PartialEq, Deserialize, Debug, Enum)]
 #[serde(rename_all = "UPPERCASE")]
 pub(crate) enum ChangeType {
     Insert,
@@ -141,8 +138,7 @@ pub(crate) enum ChangeType {
     Delete,
 }
 
-#[async_graphql::SimpleObject]
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, SimpleObject)]
 pub(crate) struct SearchChange {
     pub operation: ChangeType,
     pub record: Search,
@@ -154,8 +150,8 @@ impl Subscription {
         &self,
         ctx: &Context<'_>,
     ) -> impl Stream<Item = Result<SearchChange, FieldError>> {
-        let url = ctx.data::<DbUrl>();
-        let username = String::from(&ctx.data::<Username>().0);
+        let url = ctx.data::<DbUrl>().unwrap();
+        let username = String::from(&ctx.data::<Username>().unwrap().0);
         let mut listener = PgListener::new(&url.0).await.unwrap();
         listener.listen("searches_changes").await.unwrap();
         let stream = listener.into_stream();

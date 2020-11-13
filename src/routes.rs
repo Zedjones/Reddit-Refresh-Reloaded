@@ -5,8 +5,8 @@ use actix_web::{get, post, web, HttpRequest, HttpResponse, Result};
 use actix_web_actors::ws;
 use actix_web_httpauth::headers::authorization::{Authorization, Bearer};
 use async_graphql::http::{playground_source, GraphQLPlaygroundConfig};
-use async_graphql::{serde_json::json, ErrorExtensions};
-use async_graphql_actix_web::{GQLRequest, GQLResponse, WSSubscription};
+use async_graphql::ErrorExtensions;
+use async_graphql_actix_web::{Request, Response, WSSubscription};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
@@ -23,14 +23,14 @@ pub struct TokenParams {
 #[post("/graphql")]
 pub(crate) async fn graphql(
     schema: web::Data<Schema>,
-    req: GQLRequest,
+    req: Request,
     http_req: HttpRequest,
-) -> Result<GQLResponse> {
+) -> Result<Response> {
     let auth = Authorization::<Bearer>::parse(&http_req).ok();
     let bearer = auth.map(|auth| auth.into_scheme().clone());
     let cow_token = bearer.map(|bearer| bearer.token().to_owned());
     let token = cow_token.map(|cow| String::from(cow));
-    Ok(req.into_inner().data(token).execute(&schema).await.into())
+    Ok(schema.execute(req.into_inner().data(token)).await.into())
 }
 
 #[get("/graphql")]
@@ -44,9 +44,9 @@ pub(crate) async fn graphql_playground() -> Result<HttpResponse> {
 
 fn handle_ws_params(
     encoder: Encoder,
-    val: async_graphql::serde_json::Value,
+    val: serde_json::Value,
 ) -> async_graphql::FieldResult<async_graphql::Data> {
-    let params: TokenParams = async_graphql::serde_json::from_value(val)?;
+    let params: TokenParams = serde_json::from_value(val)?;
     let mut data = async_graphql::Data::default();
     let username = {
         if let Some(token) = params.access_token {
@@ -55,7 +55,7 @@ fn handle_ws_params(
             Err(anyhow::anyhow!("No token provided"))
         }
     }
-    .map_err(|err| err.extend_with(|_| json!({"code": 401})))?;
+    .map_err(|err| err.extend_with(|_, e| e.set("code", 401)))?;
     data.insert(Username(username));
     Ok(data)
 }
@@ -68,8 +68,8 @@ pub(crate) async fn graphql_ws(
 ) -> Result<HttpResponse> {
     let encoder = encoder.as_ref().clone();
     ws::start_with_protocols(
-        WSSubscription::new(&schema)
-            .init_context_data(move |payload_val| handle_ws_params(encoder.clone(), payload_val)),
+        WSSubscription::new(schema.as_ref().clone())
+            .initializer(move |payload_val| handle_ws_params(encoder.clone(), payload_val)),
         &["graphql-ws"],
         &req,
         payload,

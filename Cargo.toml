@@ -7,10 +7,10 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-actix-web = "2.0.0"
-actix-web-actors = "2.0.0"
+actix-web = "3.2.0"
+actix-web-actors = "3.0.0"
 actix-rt = "1.1.1"
-actix-http = "1.0.1"
+actix-http = "2.1.0"
 env_logger = "0.7.1"
 log = "0.4.8"
 sqlx = { version = "0.3.5", default-features = false, features = [ "runtime-tokio", "macros", "postgres", "chrono" ] }
@@ -22,13 +22,14 @@ anyhow = "1.0.31"
 humantime = "2.0.1"
 tokio = { version = "0.2.21", features = [ "macros", "time" ] }
 serde = { version = "1.0.114", features = [ "derive" ] }
-async-graphql = "1.16.5"
-async-graphql-actix-web = "1.16.4"
+async-graphql = "2.0.10"
+async-graphql-actix-web = "2.0.10"
 bcrypt = "0.8.1"
-actix-web-httpauth = "0.4.1"
+actix-web-httpauth = "0.5.0"
 jsonwebtoken = "7.2.0"
 envy = "0.4.1"
 reqwest = { version = "0.10.7", features = [ "json" ] }
+serde_json = "1.0.59"
 
 [build-dependencies]
 log = "0.4.8"

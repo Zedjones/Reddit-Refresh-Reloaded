@@ -4,8 +4,8 @@ use crate::scanner::Scanner;
 
 use std::collections::HashMap;
 
-use async_graphql::serde_json;
 use futures::future::{AbortHandle, Abortable};
+use serde_json;
 use sqlx::{postgres::PgListener, PgPool};
 use tokio::stream::StreamExt;
 
