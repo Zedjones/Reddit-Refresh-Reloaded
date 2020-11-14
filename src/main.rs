@@ -37,7 +37,7 @@ struct Config {
 #[actix_rt::main]
 async fn main() -> anyhow::Result<()> {
     dotenv::dotenv().ok();
-    env_logger::from_env(Env::default().default_filter_or("info")).init();
+    env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
 
     let config = envy::from_env::<Config>().unwrap_or_else(|err| {
         error!("Could not load a required value from the environment");

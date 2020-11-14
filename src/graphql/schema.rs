@@ -152,7 +152,7 @@ impl Subscription {
     ) -> impl Stream<Item = Result<SearchChange, FieldError>> {
         let url = ctx.data::<DbUrl>().unwrap();
         let username = String::from(&ctx.data::<Username>().unwrap().0);
-        let mut listener = PgListener::new(&url.0).await.unwrap();
+        let mut listener = PgListener::connect(&url.0).await.unwrap();
         listener.listen("searches_changes").await.unwrap();
         let stream = listener.into_stream();
         let update_stream = stream

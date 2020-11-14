@@ -1,6 +1,6 @@
 use chrono::NaiveTime;
 use serde::{Deserialize, Serialize};
-use sqlx::PgPool;
+use sqlx::{Done, PgPool};
 use std::time::Duration;
 
 #[derive(Serialize, Deserialize, Debug, Hash, PartialEq, Eq)]
@@ -50,11 +50,11 @@ impl Search {
         .execute(&mut conn)
         .await?;
 
-        if deleted == 0 {
+        if deleted.rows_affected() == 0 {
             Err(anyhow::anyhow!("Invalid id or id is owned by another user"))
         } else {
             conn.commit().await?;
-            Ok(deleted)
+            Ok(deleted.rows_affected())
         }
     }
     pub async fn get_search(id: i32, pool: PgPool) -> anyhow::Result<Self> {

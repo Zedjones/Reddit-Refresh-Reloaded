@@ -76,7 +76,7 @@ impl Manager {
         Ok(())
     }
     pub async fn monitor(mut self) -> anyhow::Result<()> {
-        let mut listener = PgListener::new(&self.search_url).await?;
+        let mut listener = PgListener::connect(&self.search_url).await?;
         listener.listen("searches_changes").await?;
         let mut stream = listener.into_stream();
         while let Some(notification) = stream.try_next().await? {
