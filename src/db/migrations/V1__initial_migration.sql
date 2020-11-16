@@ -14,11 +14,13 @@ CREATE TABLE searches (
 );
 
 CREATE TABLE results (
-    id INTEGER UNIQUE PRIMARY KEY NOT NULL,
+    id VARCHAR NOT NULL,
     inserted TIMESTAMP NOT NULL,
     search_id INTEGER NOT NULL,
     title VARCHAR NOT NULL,
-    FOREIGN KEY (search_id) REFERENCES searches(id)
+    permalink VARCHAR NOT NULL,
+    FOREIGN KEY (search_id) REFERENCES searches(id),
+    PRIMARY KEY (id, search_id)
 );
 
 CREATE OR REPLACE FUNCTION notify_result_changes()

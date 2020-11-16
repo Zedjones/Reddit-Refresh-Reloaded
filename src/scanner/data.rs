@@ -1,9 +1,10 @@
 use serde::Deserialize;
 
-#[derive(Deserialize, Debug)]
-struct ChildResult {
-    title: String,
-    permalink: String,
+#[derive(Deserialize, Debug, Clone)]
+pub struct ChildResult {
+    pub url: String,
+    pub id: String,
+    pub title: String,
 }
 
 #[derive(Deserialize, Debug)]
@@ -19,4 +20,10 @@ struct Children {
 #[derive(Deserialize, Debug)]
 pub(crate) struct SearchResult {
     data: Children,
+}
+
+impl SearchResult {
+    pub fn get_latest_result(&self) -> Option<ChildResult> {
+        self.data.children.first().map(|child| child.data.clone())
+    }
 }

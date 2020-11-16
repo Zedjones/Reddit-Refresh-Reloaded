@@ -5,8 +5,8 @@ use sqlx::PgPool;
 
 #[async_graphql::Object]
 impl Result {
-    async fn id(&self) -> i32 {
-        self.id
+    async fn id(&self) -> String {
+        self.id.clone()
     }
     async fn title(&self) -> String {
         self.title.clone()
