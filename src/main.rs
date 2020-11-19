@@ -1,5 +1,5 @@
 mod auth;
-pub mod db;
+mod db;
 mod graphql;
 mod notifiers;
 mod routes;
@@ -11,7 +11,6 @@ use dotenv;
 use env_logger::Env;
 use log::error;
 use serde::Deserialize;
-use std::sync::Arc;
 use std::time::Duration;
 
 use auth::Encoder;

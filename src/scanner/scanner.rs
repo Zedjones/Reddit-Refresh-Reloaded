@@ -10,7 +10,6 @@ pub(crate) struct Scanner {
     pool: PgPool,
     search: Search,
     search_url: String,
-    running: bool,
     refresh_time: Duration,
     client: Client,
 }
@@ -28,7 +27,6 @@ impl Scanner {
             search,
             search_url,
             client,
-            running: true,
             refresh_time,
         }
     }
@@ -49,7 +47,7 @@ impl Scanner {
         }))
     }
     pub async fn check_results(&self) {
-        while self.running {
+        loop {
             tokio::time::delay_for(self.refresh_time).await;
             let search_result = self.search_reddit().await;
             let res = match search_result {
@@ -73,8 +71,5 @@ impl Scanner {
                 log::error!("{}", error);
             }
         }
-    }
-    pub fn stop(&mut self) {
-        self.running = false;
     }
 }

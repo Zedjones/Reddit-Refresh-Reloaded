@@ -14,6 +14,9 @@ impl Result {
     async fn inserted(&self) -> TimestampDateTime {
         self.inserted.into()
     }
+    async fn url(&self) -> String {
+        self.permalink.clone()
+    }
 }
 
 #[async_graphql::Object]

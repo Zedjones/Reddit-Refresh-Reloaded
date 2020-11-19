@@ -26,12 +26,6 @@ impl Manager {
             actix_rt::spawn(async move {
                 let _ = Abortable::new(scanner.check_results(), registration).await;
             });
-            let handle_clone = handle.clone();
-            actix_rt::spawn(async move {
-                tokio::time::delay_for(std::time::Duration::from_secs(11)).await;
-                log::info!("Stopping scan...");
-                handle_clone.abort();
-            });
             scanner_map.insert(id, handle);
         }
         Ok(Manager {
