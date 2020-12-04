@@ -23,6 +23,15 @@ CREATE TABLE results (
     PRIMARY KEY (id, search_id)
 );
 
+CREATE TABLE gotify_settings (
+  username VARCHAR NOT NULL,
+  enabled BOOLEAN NOT NULL,
+  server_url VARCHAR NOT NULL,
+  token VARCHAR NOT NULL,
+  priority BIGINT,
+  FOREIGN KEY (username) REFERENCES users(username)
+);
+
 CREATE OR REPLACE FUNCTION notify_result_changes()
 RETURNS trigger AS $$
 BEGIN

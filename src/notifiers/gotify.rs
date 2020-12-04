@@ -7,7 +7,7 @@ use super::Notifier;
 pub(crate) struct GotifyNotifier {
     server_url: String,
     token: String,
-    priority: Option<u64>,
+    priority: Option<i64>,
     client: Client,
 }
 

@@ -1,5 +1,5 @@
 use crate::auth::{Claims, Encoder};
-use crate::db::{search::NewSearch, user::NewUser, Search, User};
+use crate::db::{search::NewSearch, Search, User};
 use crate::graphql::scalars::DurationString;
 use async_graphql::{Context, Enum, ErrorExtensions, FieldError, FieldResult, SimpleObject};
 use chrono::{Duration, Local};
@@ -73,7 +73,7 @@ impl Mutation {
     ) -> FieldResult<User> {
         let pool = ctx.data::<PgPool>().unwrap();
         Ok(User::insert(
-            NewUser {
+            User {
                 username,
                 password,
                 refresh_time: refresh_time.0,

@@ -8,14 +8,8 @@ pub(crate) struct User {
     pub refresh_time: Duration,
 }
 
-pub(crate) struct NewUser {
-    pub username: String,
-    pub password: String,
-    pub refresh_time: Duration,
-}
-
 impl User {
-    pub async fn insert(user: NewUser, pool: &PgPool) -> anyhow::Result<Self> {
+    pub async fn insert(user: User, pool: &PgPool) -> anyhow::Result<Self> {
         let midnight = NaiveTime::from_num_seconds_from_midnight(0, 0);
         let mut conn = pool.begin().await?;
         let hashed = bcrypt::hash(user.password, bcrypt::DEFAULT_COST)?;
@@ -79,10 +73,7 @@ impl User {
 
 #[cfg(test)]
 mod tests {
-    use crate::db::{
-        timeout_connect,
-        user::{NewUser, User},
-    };
+    use crate::db::{timeout_connect, user::User};
     #[tokio::test]
     /**
     This test isn't really a proper test, it's just a quick and easy way to test
@@ -93,7 +84,7 @@ mod tests {
         let pool = timeout_connect("postgresql://zedjones:changeMe@localhost/postgres")
             .await
             .unwrap();
-        let user = NewUser {
+        let user = User {
             password: "a_password".to_string(),
             username: "a_user".to_string(),
             refresh_time: std::time::Duration::from_secs(5),

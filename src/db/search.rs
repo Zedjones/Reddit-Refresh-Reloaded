@@ -57,7 +57,7 @@ impl Search {
             Ok(deleted.rows_affected())
         }
     }
-    pub async fn get_search(id: i32, pool: PgPool) -> anyhow::Result<Self> {
+    pub async fn get_search(id: i32, pool: &PgPool) -> anyhow::Result<Self> {
         let mut conn = pool.begin().await?;
         let search = sqlx::query!(
             "SELECT id, username, subreddit, search_term FROM searches
