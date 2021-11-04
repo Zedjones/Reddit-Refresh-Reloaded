@@ -2,10 +2,13 @@ use chrono::NaiveTime;
 use sqlx::PgPool;
 use std::time::Duration;
 
+use crate::db::notifiers::NotifierSettings;
+
 pub(crate) struct User {
     pub username: String,
     pub password: String,
     pub refresh_time: Duration,
+    pub settings: NotifierSettings,
 }
 
 impl User {
@@ -28,6 +31,7 @@ impl User {
             username: user.username,
             password: user.password,
             refresh_time: (user.refresh_time.unwrap() - midnight).to_std().unwrap(),
+            settings: NotifierSettings::new(),
         })
     }
     pub async fn get_user(username: &str, pool: &PgPool) -> anyhow::Result<Self> {
@@ -41,9 +45,10 @@ impl User {
         .fetch_one(&mut conn)
         .await?;
         Ok(User {
-            username: user.username,
+            username: user.username.clone(),
             password: user.password,
             refresh_time: (user.refresh_time.unwrap() - midnight).to_std().unwrap(),
+            settings: NotifierSettings::get_settings_for_user(&user.username, &pool).await, //TODO: update this for actual settings
         })
     }
     pub async fn get_users(pool: &PgPool) -> anyhow::Result<Vec<Self>> {
@@ -57,6 +62,7 @@ impl User {
                 username: user.username,
                 password: user.password,
                 refresh_time: (user.refresh_time.unwrap() - midnight).to_std().unwrap(),
+                settings: NotifierSettings::new(), //TODO: update this for actual settings
             })
             .collect();
         Ok(users)
@@ -73,7 +79,7 @@ impl User {
 
 #[cfg(test)]
 mod tests {
-    use crate::db::{timeout_connect, user::User};
+    use crate::db::{notifiers::NotifierSettings, timeout_connect, user::User};
     #[tokio::test]
     /**
     This test isn't really a proper test, it's just a quick and easy way to test
@@ -88,6 +94,7 @@ mod tests {
             password: "a_password".to_string(),
             username: "a_user".to_string(),
             refresh_time: std::time::Duration::from_secs(5),
+            settings: NotifierSettings::new(),
         };
         let user = User::insert(user, &pool).await.unwrap();
         assert_eq!(std::time::Duration::from_secs(5), user.refresh_time);

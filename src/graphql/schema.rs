@@ -1,6 +1,9 @@
-use crate::auth::{Claims, Encoder};
 use crate::db::{search::NewSearch, Search, User};
 use crate::graphql::scalars::DurationString;
+use crate::{
+    auth::{Claims, Encoder},
+    db::notifiers::NotifierSettings,
+};
 use async_graphql::{Context, Enum, ErrorExtensions, FieldError, FieldResult, SimpleObject};
 use chrono::{Duration, Local};
 use futures::{Stream, StreamExt};
@@ -77,6 +80,7 @@ impl Mutation {
                 username,
                 password,
                 refresh_time: refresh_time.0,
+                settings: NotifierSettings::new(),
             },
             pool,
         )

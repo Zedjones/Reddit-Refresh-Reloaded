@@ -7,7 +7,7 @@ use std::collections::HashMap;
 use futures::future::{AbortHandle, Abortable};
 use serde_json;
 use sqlx::{postgres::PgListener, PgPool};
-use tokio::stream::StreamExt;
+use tokio_stream::StreamExt;
 
 pub struct Manager {
     pool: PgPool,
