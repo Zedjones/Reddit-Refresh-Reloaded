@@ -1,4 +1,5 @@
 mod auth;
+mod config;
 mod db;
 mod graphql;
 mod notifiers;
@@ -10,28 +11,13 @@ use actix_web::{guard, web, App, HttpServer};
 use dotenv;
 use env_logger::Env;
 use log::error;
-use serde::Deserialize;
-use std::time::Duration;
 
 use auth::Encoder;
+use config::Config;
 use db::timeout_connect;
 use graphql::schema::schema;
 use routes::{graphql as graphql_handler, graphql_playground, graphql_ws};
 use scanner::manager::Manager;
-
-const SECONDS_IN_DAY: u64 = 86_400;
-
-fn default_expiration() -> Duration {
-    Duration::from_secs(2 * SECONDS_IN_DAY)
-}
-
-#[derive(Deserialize)]
-struct Config {
-    database_url: String,
-    jwt_secret: String,
-    #[serde(default = "default_expiration")]
-    jwt_expiration: Duration,
-}
 
 #[actix_rt::main]
 async fn main() -> anyhow::Result<()> {
@@ -66,6 +52,7 @@ async fn main() -> anyhow::Result<()> {
 
     Ok(HttpServer::new(move || {
         App::new()
+            .data(config.clone())
             .data(pool.clone())
             .data(schema(pool.clone(), encoder.clone(), db_url.clone()))
             .data(encoder.clone())
