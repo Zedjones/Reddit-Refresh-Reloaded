@@ -1,0 +1,58 @@
+type Query {
+	getSearches: [Search!]!
+	getSearchesForSubreddit(subreddit: String!): [Search!]!
+	getUserInfo: User!
+}
+type Search {
+	id: Int!
+	username: String!
+	subreddit: String!
+	searchTerm: String!
+	results: [Result!]!
+}
+type Result {
+	id: String!
+	title: String!
+	inserted: DateTime!
+	url: String!
+}
+scalar DateTime
+type User {
+	username: String!
+	refreshTime: Duration!
+	searches: [Search!]!
+	settings: NotifierSettings!
+}
+scalar Duration
+type NotifierSettings {
+	gotifySettings: GotifySettings
+}
+type GotifySettings {
+	enabled: Boolean!
+	serverUrl: String!
+	token: String!
+	priority: Int
+}
+type Mutation {
+	createUser(username: String!, password: String!, refreshTime: Duration!): User!
+	addSearch(subreddit: String!, searchTerm: String!): Search!
+	deleteSearch(id: Int!): Int!
+	login(username: String!, password: String!): String!
+}
+type Subscription {
+	searchUpdates: SearchChange!
+}
+type SearchChange {
+	operation: ChangeType!
+	record: Search!
+}
+enum ChangeType {
+	INSERT
+	UPDATE
+	DELETE
+}
+schema {
+	query: Query
+	mutation: Mutation
+	subscription: Subscription
+}
