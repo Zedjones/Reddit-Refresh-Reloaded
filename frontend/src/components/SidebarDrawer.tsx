@@ -1,11 +1,10 @@
-import React from 'react';
 import Drawer from '@material-ui/core/Drawer';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListSubheader from '@material-ui/core/ListSubheader';
 import { ListItemText } from '@material-ui/core';
 
-export default function SidebarDrawer(props) {
+export default function SidebarDrawer() {
   return (
     <Drawer open>
       <List>

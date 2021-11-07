@@ -1,12 +1,11 @@
-import React from 'react';
 import logo from './logo.svg';
 import './App.css';
+import { Provider } from 'urql';
 import { client } from './index';
-import { ApolloProvider } from '@apollo/react-hooks';
 
 function App() {
   return (
-    <ApolloProvider client={client} >
+    <Provider value={client}>
       <div className="App">
         <header className="App-header">
           <img src={logo} className="App-logo" alt="logo" />
@@ -23,7 +22,7 @@ function App() {
           </a>
         </header>
       </div>
-    </ApolloProvider>
+    </Provider>
   );
 }
 
