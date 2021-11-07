@@ -64,7 +64,8 @@ impl Result {
         pool: &PgPool,
     ) -> anyhow::Result<Option<Self>> {
         let mut conn = pool.begin().await?;
-        let result = sqlx::query!(
+        let result = sqlx::query_as!(
+            Result,
             "SELECT id, search_id, title, inserted, permalink FROM results \
              WHERE search_id = $1 \
              ORDER BY inserted DESC \
@@ -73,15 +74,6 @@ impl Result {
         )
         .fetch_all(&mut conn)
         .await?;
-        Ok(result
-            .into_iter()
-            .map(|result| Result {
-                id: result.id,
-                inserted: result.inserted,
-                search_id: result.search_id,
-                title: result.title,
-                permalink: result.permalink,
-            })
-            .next())
+        Ok(result.into_iter().next())
     }
 }

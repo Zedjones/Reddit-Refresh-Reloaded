@@ -1,5 +1,6 @@
 use chrono::NaiveTime;
-use sqlx::PgPool;
+use sqlx::{postgres::types::PgInterval, PgPool};
+use std::convert::{TryFrom, TryInto};
 use std::time::Duration;
 
 use crate::db::notifiers::NotifierSettings;
@@ -12,6 +13,9 @@ pub(crate) struct User {
 }
 
 impl User {
+    pub fn convert_to_duration(interval: PgInterval) -> Duration {
+        Duration::from_micros(interval.microseconds.try_into().unwrap())
+    }
     pub async fn insert(user: User, pool: &PgPool) -> anyhow::Result<Self> {
         let midnight = NaiveTime::from_num_seconds_from_midnight(0, 0);
         let mut conn = pool.begin().await?;
@@ -22,7 +26,7 @@ impl User {
              VALUES ($1, $2, $3) RETURNING username, password, refresh_time",
             user.username,
             hashed,
-            NaiveTime::from_num_seconds_from_midnight(seconds as u32, 0)
+            PgInterval::try_from(user.refresh_time).unwrap(),
         )
         .fetch_one(&mut conn)
         .await?;
@@ -30,7 +34,7 @@ impl User {
         Ok(User {
             username: user.username,
             password: user.password,
-            refresh_time: (user.refresh_time.unwrap() - midnight).to_std().unwrap(),
+            refresh_time: Self::convert_to_duration(user.refresh_time.unwrap()),
             settings: NotifierSettings::new(),
         })
     }
@@ -47,7 +51,9 @@ impl User {
         Ok(User {
             username: user.username.clone(),
             password: user.password,
-            refresh_time: (user.refresh_time.unwrap() - midnight).to_std().unwrap(),
+            refresh_time: Duration::from_micros(
+                user.refresh_time.unwrap().microseconds.try_into().unwrap(),
+            ),
             settings: NotifierSettings::get_settings_for_user(&user.username, &pool).await, //TODO: update this for actual settings
         })
     }
@@ -61,7 +67,7 @@ impl User {
             .map(|user| User {
                 username: user.username,
                 password: user.password,
-                refresh_time: (user.refresh_time.unwrap() - midnight).to_std().unwrap(),
+                refresh_time: Self::convert_to_duration(user.refresh_time.unwrap()),
                 settings: NotifierSettings::new(), //TODO: update this for actual settings
             })
             .collect();

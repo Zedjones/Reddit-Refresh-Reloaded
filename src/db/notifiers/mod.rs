@@ -1,6 +1,7 @@
 use gotify::GotifySettings;
 use sqlx::PgPool;
 
+pub mod apprise;
 pub mod gotify;
 
 pub(crate) struct NotifierSettings {

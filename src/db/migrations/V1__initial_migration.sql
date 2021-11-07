@@ -1,7 +1,7 @@
 CREATE TABLE users (
     username VARCHAR UNIQUE PRIMARY KEY NOT NULL,
     password VARCHAR NOT NULL,
-    refresh_time TIME
+    refresh_time INTERVAL
 );
 
 CREATE TABLE searches (
