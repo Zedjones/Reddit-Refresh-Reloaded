@@ -1,15 +1,14 @@
-use chrono::NaiveTime;
 use sqlx::{postgres::types::PgInterval, PgPool};
 use std::convert::{TryFrom, TryInto};
 use std::time::Duration;
 
-use crate::db::notifiers::NotifierSettings;
+use super::notifiers::apprise::AppriseConfig;
 
 pub(crate) struct User {
     pub username: String,
     pub password: String,
     pub refresh_time: Duration,
-    pub settings: NotifierSettings,
+    pub notifiers: Vec<AppriseConfig>,
 }
 
 impl User {
@@ -33,7 +32,7 @@ impl User {
             username: user.username,
             password: user.password,
             refresh_time: Self::convert_to_duration(user.refresh_time.unwrap()),
-            settings: NotifierSettings::new(),
+            notifiers: Vec::new(),
         })
     }
     pub async fn get_user(username: &str, pool: &PgPool) -> anyhow::Result<Self> {
@@ -51,7 +50,7 @@ impl User {
             refresh_time: Duration::from_micros(
                 user.refresh_time.unwrap().microseconds.try_into().unwrap(),
             ),
-            settings: NotifierSettings::get_settings_for_user(&user.username, &pool).await, //TODO: update this for actual settings
+            notifiers: AppriseConfig::get_configs_for_user(&user.username, &pool).await?, //TODO: update this for actual settings
         })
     }
     pub async fn get_users(pool: &PgPool) -> anyhow::Result<Vec<Self>> {
@@ -60,11 +59,13 @@ impl User {
             .fetch_all(&mut conn)
             .await?
             .into_iter()
-            .map(|user| User {
-                username: user.username,
-                password: user.password,
-                refresh_time: Self::convert_to_duration(user.refresh_time.unwrap()),
-                settings: NotifierSettings::new(), //TODO: update this for actual settings
+            .map(|user| async move {
+                User {
+                    username: user.username,
+                    password: user.password,
+                    refresh_time: Self::convert_to_duration(user.refresh_time.unwrap()),
+                    notifiers: AppriseConfig::get_configs_for_user(&user.username, &pool).await?, //TODO: update this for actual settings
+                }
             })
             .collect();
         Ok(users)
@@ -96,7 +97,7 @@ mod tests {
             password: "a_password".to_string(),
             username: "a_user".to_string(),
             refresh_time: std::time::Duration::from_secs(5),
-            settings: NotifierSettings::new(),
+            notifiers: Vec::new(),
         };
         let user = User::insert(user, &pool).await.unwrap();
         assert_eq!(std::time::Duration::from_secs(5), user.refresh_time);

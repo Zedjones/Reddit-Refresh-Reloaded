@@ -80,7 +80,7 @@ impl Mutation {
                 username,
                 password,
                 refresh_time: refresh_time.0,
-                settings: NotifierSettings::new(),
+                notifiers: Vec::new(),
             },
             pool,
         )
