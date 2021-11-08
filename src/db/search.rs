@@ -69,7 +69,6 @@ impl Search {
     }
     pub async fn get_searches(pool: &PgPool) -> anyhow::Result<Vec<(Self, Duration)>> {
         let mut conn = pool.begin().await?;
-        let midnight = NaiveTime::from_num_seconds_from_midnight(0, 0);
         let searches: Vec<(Self, Duration)> = sqlx::query!(
             "SELECT id, searches.username, subreddit, search_term, refresh_time 
                 FROM searches

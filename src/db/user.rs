@@ -17,10 +17,8 @@ impl User {
         Duration::from_micros(interval.microseconds.try_into().unwrap())
     }
     pub async fn insert(user: User, pool: &PgPool) -> anyhow::Result<Self> {
-        let midnight = NaiveTime::from_num_seconds_from_midnight(0, 0);
         let mut conn = pool.begin().await?;
         let hashed = bcrypt::hash(user.password, bcrypt::DEFAULT_COST)?;
-        let seconds = user.refresh_time.as_secs();
         let user = sqlx::query!(
             "INSERT INTO users (username, password, refresh_time) \
              VALUES ($1, $2, $3) RETURNING username, password, refresh_time",
@@ -39,7 +37,6 @@ impl User {
         })
     }
     pub async fn get_user(username: &str, pool: &PgPool) -> anyhow::Result<Self> {
-        let midnight = NaiveTime::from_num_seconds_from_midnight(0, 0);
         let mut conn = pool.begin().await?;
         let user = sqlx::query!(
             "SELECT username, password, refresh_time FROM users \
@@ -58,7 +55,6 @@ impl User {
         })
     }
     pub async fn get_users(pool: &PgPool) -> anyhow::Result<Vec<Self>> {
-        let midnight = NaiveTime::from_num_seconds_from_midnight(0, 0);
         let mut conn = pool.begin().await?;
         let users: Vec<Self> = sqlx::query!("SELECT username, password, refresh_time FROM users")
             .fetch_all(&mut conn)

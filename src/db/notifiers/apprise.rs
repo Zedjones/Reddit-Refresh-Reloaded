@@ -1,23 +1,21 @@
-/// Basic types for notifier fields, can be expanded if needed
-#[derive(sqlx::Type)]
-pub(crate) enum NotifierFieldType {
-    Int,
-    String,
-    Float,
-    Boolean,
-    IpAddress,
-    Port,
-    Email,
-}
+use sqlx::PgPool;
 
-/// Generic notifier fields so that the frontend can properly render them in a form
-pub(crate) struct NotifierField {
+/// Apprise Gerneric Configuration
+pub(crate) struct AppriseConfig {
+    id: i32,
     name: String,
-    field_type: NotifierFieldType,
+    uri: String,
 }
 
-/// Struct containing NotifierField and value
-pub(crate) struct NotifierFieldValue {
-    field: NotifierField,
-    value: String,
+impl AppriseConfig {
+    pub async fn get_configs_for_user(username: &str, pool: &PgPool) -> anyhow::Result<Vec<Self>> {
+        let mut conn = pool.begin().await?;
+        Ok(sqlx::query_as!(
+            AppriseConfig,
+            "SELECT id, name, uri FROM notifier_configs WHERE username = $1",
+            username,
+        )
+        .fetch_all(&mut conn)
+        .await?)
+    }
 }

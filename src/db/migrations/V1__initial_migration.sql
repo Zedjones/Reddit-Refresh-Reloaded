@@ -32,6 +32,13 @@ CREATE TABLE gotify_settings (
   FOREIGN KEY (username) REFERENCES users(username)
 );
 
+CREATE TABLE notifier_configs (
+  id SERIAL UNIQUE PRIMARY KEY NOT NULL,
+  username VARCHAR NOT NULL,
+  name VARCHAR NOT NULL,
+  uri VARCHAR NOT NULL
+);
+
 CREATE OR REPLACE FUNCTION notify_result_changes()
 RETURNS trigger AS $$
 BEGIN
