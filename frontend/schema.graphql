@@ -1,7 +1,46 @@
+"""
+Apprise Generic Configuration
+"""
+type AppriseConfig {
+	id: Int!
+	"""
+	Name of this configuration
+	"""
+	name: String!
+	"""
+	Apprise URI associated with this configuration
+	"""
+	uri: String!
+	"""
+	Priority/urgency with which to send messages
+	"""
+	urgency: Urgency!
+}
+enum ChangeType {
+	INSERT
+	UPDATE
+	DELETE
+}
+scalar DateTime
+scalar Duration
+type Mutation {
+	createUser(username: String!, password: String!, refreshTime: Duration!): User!
+	addSearch(subreddit: String!, searchTerm: String!): Search!
+	deleteSearch(id: Int!): Int!
+	login(username: String!, password: String!): String!
+	addNotifier(name: String!, uri: String!, priority: Urgency!): AppriseConfig!
+}
 type Query {
 	getSearches: [Search!]!
 	getSearchesForSubreddit(subreddit: String!): [Search!]!
 	getUserInfo: User!
+}
+type Result {
+	id: String!
+	searchId: Int!
+	permalink: String!
+	title: String!
+	inserted: DateTime!
 }
 type Search {
 	id: Int!
@@ -10,46 +49,24 @@ type Search {
 	searchTerm: String!
 	results: [Result!]!
 }
-type Result {
-	id: String!
-	title: String!
-	inserted: DateTime!
-	url: String!
-}
-scalar DateTime
-type User {
-	username: String!
-	refreshTime: Duration!
-	searches: [Search!]!
-	settings: NotifierSettings!
-}
-scalar Duration
-type NotifierSettings {
-	gotifySettings: GotifySettings
-}
-type GotifySettings {
-	enabled: Boolean!
-	serverUrl: String!
-	token: String!
-	priority: Int
-}
-type Mutation {
-	createUser(username: String!, password: String!, refreshTime: Duration!): User!
-	addSearch(subreddit: String!, searchTerm: String!): Search!
-	deleteSearch(id: Int!): Int!
-	login(username: String!, password: String!): String!
-}
-type Subscription {
-	searchUpdates: SearchChange!
-}
 type SearchChange {
 	operation: ChangeType!
 	record: Search!
 }
-enum ChangeType {
-	INSERT
-	UPDATE
-	DELETE
+type Subscription {
+	searchUpdates: SearchChange!
+}
+enum Urgency {
+	INFO
+	SUCCESS
+	WARNING
+	FAILURE
+}
+type User {
+	username: String!
+	refreshTime: Duration!
+	searches: [Search!]!
+	settings: [AppriseConfig!]!
 }
 schema {
 	query: Query

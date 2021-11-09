@@ -1,9 +1,7 @@
+use crate::auth::{Claims, Encoder};
+use crate::db::notifiers::apprise::{AppriseConfig, Urgency};
 use crate::db::{search::NewSearch, Search, User};
 use crate::graphql::scalars::DurationString;
-use crate::{
-    auth::{Claims, Encoder},
-    db::notifiers::NotifierSettings,
-};
 use async_graphql::{Context, Enum, ErrorExtensions, FieldError, FieldResult, SimpleObject};
 use chrono::{Duration, Local};
 use futures::{Stream, StreamExt};
@@ -22,7 +20,7 @@ pub(crate) fn verify_token(ctx: &Context<'_>) -> FieldResult<String> {
         if let Some(token) = token {
             encoder.decode(&token).map(|claims| claims.sub)
         } else {
-            Err(anyhow::anyhow!("No token provided"))
+            Err(anyhow::anyhow!("No authorization token provided"))
         }
     }
     .map_err(|err| err.extend_with(|_, e| e.set("code", 401)))
@@ -67,6 +65,7 @@ pub(crate) struct Mutation;
 
 #[async_graphql::Object]
 impl Mutation {
+    /// Create a user with the provided username, password, and refresh time
     async fn create_user(
         &self,
         ctx: &Context<'_>,
@@ -129,6 +128,27 @@ impl Mutation {
         } else {
             Err(anyhow::anyhow!("Incorrect username or password"))?
         }
+    }
+    pub(crate) async fn add_notifier(
+        &self,
+        ctx: &Context<'_>,
+        name: String,
+        uri: String,
+        priority: Urgency,
+    ) -> FieldResult<AppriseConfig> {
+        let pool = ctx.data::<PgPool>().unwrap();
+        let username = verify_token(ctx)?;
+        Ok(AppriseConfig::insert(
+            AppriseConfig {
+                id: 0,
+                name,
+                uri,
+                urgency: priority,
+            },
+            &username,
+            &pool,
+        )
+        .await?)
     }
 }
 

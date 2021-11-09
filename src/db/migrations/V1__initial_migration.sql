@@ -32,11 +32,14 @@ CREATE TABLE gotify_settings (
   FOREIGN KEY (username) REFERENCES users(username)
 );
 
+CREATE TYPE urgency AS ENUM ('info', 'success', 'warning', 'failure');
+
 CREATE TABLE notifier_configs (
   id SERIAL UNIQUE PRIMARY KEY NOT NULL,
   username VARCHAR NOT NULL,
   name VARCHAR NOT NULL,
-  uri VARCHAR NOT NULL
+  uri VARCHAR NOT NULL,
+  urgency URGENCY NOT NULL
 );
 
 CREATE OR REPLACE FUNCTION notify_result_changes()

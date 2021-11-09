@@ -3,19 +3,10 @@ use crate::graphql::scalars::{DurationString, TimestampDateTime};
 use async_graphql::{Context, FieldResult};
 use sqlx::PgPool;
 
-#[async_graphql::Object]
+#[async_graphql::ComplexObject]
 impl Result {
-    async fn id(&self) -> String {
-        self.id.clone()
-    }
-    async fn title(&self) -> String {
-        self.title.clone()
-    }
     async fn inserted(&self) -> TimestampDateTime {
         self.inserted.into()
-    }
-    async fn url(&self) -> String {
-        self.permalink.clone()
     }
 }
 

@@ -1,11 +1,15 @@
+use async_graphql::SimpleObject;
 use chrono::{NaiveDateTime, Utc};
 use sqlx::PgPool;
 
+#[derive(SimpleObject)]
+#[graphql(complex)]
 pub(crate) struct Result {
     pub id: String,
     pub search_id: i32,
     pub permalink: String,
     pub title: String,
+    #[graphql(skip)]
     pub inserted: NaiveDateTime,
 }
 
