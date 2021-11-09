@@ -1,6 +1,8 @@
+use async_graphql::SimpleObject;
 use sqlx::PgPool;
 
 /// Apprise Gerneric Configuration
+#[derive(SimpleObject)]
 pub(crate) struct AppriseConfig {
     id: i32,
     name: String,

@@ -67,11 +67,10 @@ pub(crate) async fn graphql_ws(
     payload: web::Payload,
 ) -> Result<HttpResponse> {
     let encoder = encoder.as_ref().clone();
-    ws::start_with_protocols(
-        WSSubscription::new(schema.as_ref().clone())
-            .initializer(move |payload_val| handle_ws_params(encoder.clone(), payload_val)),
-        &["graphql-ws"],
+    WSSubscription::start_with_initializer(
+        schema.as_ref().clone(),
         &req,
         payload,
+        |payload_val| async move { handle_ws_params(encoder.clone(), payload_val) },
     )
 }

@@ -23,8 +23,8 @@ anyhow = "1.0.34"
 humantime = "2.0.1"
 tokio = { version = "0.2.21", features = [ "macros", "time" ] }
 serde = { version = "1.0.114", features = [ "derive" ] }
-async-graphql = "2.1.1"
-async-graphql-actix-web = "2.1.1"
+async-graphql = "2.11.1"
+async-graphql-actix-web = "2.11.1"
 bcrypt = "0.10.1"
 actix-web-httpauth = "0.5.0"
 jsonwebtoken = "7.2.0"

@@ -53,23 +53,6 @@ impl User {
             notifiers: AppriseConfig::get_configs_for_user(&user.username, &pool).await?, //TODO: update this for actual settings
         })
     }
-    pub async fn get_users(pool: &PgPool) -> anyhow::Result<Vec<Self>> {
-        let mut conn = pool.begin().await?;
-        let users: Vec<Self> = sqlx::query!("SELECT username, password, refresh_time FROM users")
-            .fetch_all(&mut conn)
-            .await?
-            .into_iter()
-            .map(|user| async move {
-                User {
-                    username: user.username,
-                    password: user.password,
-                    refresh_time: Self::convert_to_duration(user.refresh_time.unwrap()),
-                    notifiers: AppriseConfig::get_configs_for_user(&user.username, &pool).await?, //TODO: update this for actual settings
-                }
-            })
-            .collect();
-        Ok(users)
-    }
     pub async fn verify_login(
         username: &str,
         password: &str,
@@ -82,7 +65,7 @@ impl User {
 
 #[cfg(test)]
 mod tests {
-    use crate::db::{notifiers::NotifierSettings, timeout_connect, user::User};
+    use crate::db::{timeout_connect, user::User};
     #[tokio::test]
     /**
     This test isn't really a proper test, it's just a quick and easy way to test

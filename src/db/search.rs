@@ -1,3 +1,5 @@
+use async_graphql::SimpleObject;
+use async_graphql::*;
 use chrono::NaiveTime;
 use serde::{Deserialize, Serialize};
 use sqlx::{Done, PgPool};
@@ -5,7 +7,8 @@ use std::time::Duration;
 
 use crate::db::User;
 
-#[derive(Serialize, Deserialize, Debug, Hash, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Debug, Hash, PartialEq, Eq, SimpleObject)]
+#[graphql(complex)]
 pub(crate) struct Search {
     pub id: i32,
     pub username: String,
