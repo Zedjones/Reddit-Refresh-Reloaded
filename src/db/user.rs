@@ -1,4 +1,3 @@
-use async_graphql::SimpleObject;
 use sqlx::{postgres::types::PgInterval, PgPool};
 use std::convert::{TryFrom, TryInto};
 use std::time::Duration;

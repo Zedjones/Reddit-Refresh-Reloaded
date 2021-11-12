@@ -1,6 +1,5 @@
 use crate::db::result::Result;
 use async_trait::async_trait;
-use serde::{Deserialize, Serialize};
 
 mod apprise;
 mod gotify;

@@ -42,26 +42,23 @@ CREATE TABLE notifier_configs (
   urgency URGENCY NOT NULL
 );
 
-CREATE OR REPLACE FUNCTION notify_result_changes()
+CREATE OR REPLACE FUNCTION new_results()
 RETURNS trigger AS $$
 BEGIN
   PERFORM pg_notify(
-    'results_changes',
-    json_build_object(
-      'operation', TG_OP,
-      'record', row_to_json(NEW)
-    )::text
+    'new_results',
+    row_to_json(NEW)::text
   );
 
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER results_changes
-AFTER INSERT OR UPDATE OR DELETE
+CREATE TRIGGER new_results
+AFTER INSERT
 ON results
 FOR EACH ROW
-EXECUTE PROCEDURE notify_result_changes();
+EXECUTE PROCEDURE new_results();
 
 CREATE OR REPLACE FUNCTION notify_search_changes()
 RETURNS trigger AS $$

@@ -1,6 +1,4 @@
 use async_graphql::SimpleObject;
-use async_graphql::*;
-use chrono::NaiveTime;
 use serde::{Deserialize, Serialize};
 use sqlx::{Done, PgPool};
 use std::time::Duration;

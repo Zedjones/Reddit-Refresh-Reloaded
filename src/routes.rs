@@ -2,7 +2,6 @@ use crate::auth::Encoder;
 use crate::graphql::schema::{Schema, Username};
 use actix_web::http::header::Header;
 use actix_web::{get, post, web, HttpRequest, HttpResponse, Result};
-use actix_web_actors::ws;
 use actix_web_httpauth::headers::authorization::{Authorization, Bearer};
 use async_graphql::http::{playground_source, GraphQLPlaygroundConfig};
 use async_graphql::ErrorExtensions;
@@ -71,6 +70,6 @@ pub(crate) async fn graphql_ws(
         schema.as_ref().clone(),
         &req,
         payload,
-        |payload_val| async move { handle_ws_params(encoder.clone(), payload_val) },
+        |payload_val| async move { handle_ws_params(encoder, payload_val) },
     )
 }

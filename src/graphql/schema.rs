@@ -1,6 +1,6 @@
 use crate::auth::{Claims, Encoder};
 use crate::db::notifiers::apprise::{AppriseConfig, Urgency};
-use crate::db::{search::NewSearch, Search, User};
+use crate::db::{search::NewSearch, Result as DbResult, Search, User};
 use crate::graphql::scalars::DurationString;
 use async_graphql::{Context, Enum, ErrorExtensions, FieldError, FieldResult, SimpleObject};
 use chrono::{Duration, Local};
@@ -190,5 +190,47 @@ impl Subscription {
             });
 
         update_stream
+    }
+    async fn result_updates(
+        &self,
+        ctx: &Context<'_>,
+        search_id: i32,
+    ) -> impl Stream<Item = Result<DbResult, FieldError>> {
+        // These are fine to be unwrapped since we know that they'll be present in the context
+        let url = ctx.data::<DbUrl>().unwrap();
+        let username = &ctx.data::<Username>().unwrap().0;
+        let pool = ctx.data::<PgPool>().unwrap();
+
+        // Use an IIFE to take advantage of the ? operator
+        let stream_result = (|| async {
+            // See if there is a search associated with the provided ID
+            let search = Search::get_search(search_id, &pool).await?;
+            // Check if the located search is associated with the current user
+            if search.username != *username {
+                Err(anyhow::anyhow!(
+                    "Trying to get results for a search that belongs to another user."
+                ))
+            } else {
+                let mut listener = PgListener::connect(&url.0).await?;
+                listener.listen("result_changes").await?;
+                Ok(listener.into_stream())
+            }
+        })()
+        .await;
+
+        match stream_result {
+            Err(error) => futures::stream::iter(vec![Err(error.into())].into_iter()).boxed(),
+            Ok(stream) => stream
+                .filter_map(
+                    |result| async move { result.ok().map(|not| String::from(not.payload())) },
+                )
+                .filter_map(move |payload| async move {
+                    serde_json::from_str::<DbResult>(&payload)
+                        .ok()
+                        .filter(|result| result.search_id == search_id)
+                        .map(|result| Ok(result))
+                })
+                .boxed(),
+        }
     }
 }
