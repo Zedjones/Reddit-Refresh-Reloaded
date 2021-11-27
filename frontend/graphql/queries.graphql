@@ -1,0 +1,10 @@
+query getUserSettings {
+  getUserInfo {
+    settings {
+      id
+      uri
+      name
+      urgency
+    }
+  }
+}

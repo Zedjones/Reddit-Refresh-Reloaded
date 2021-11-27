@@ -24,6 +24,9 @@ enum ChangeType {
 scalar DateTime
 scalar Duration
 type Mutation {
+	"""
+	Create a user with the provided username, password, and refresh time
+	"""
 	createUser(username: String!, password: String!, refreshTime: Duration!): User!
 	addSearch(subreddit: String!, searchTerm: String!): Search!
 	deleteSearch(id: Int!): Int!
@@ -55,6 +58,7 @@ type SearchChange {
 }
 type Subscription {
 	searchUpdates: SearchChange!
+	resultUpdates(searchId: Int!): Result!
 }
 enum Urgency {
 	INFO
