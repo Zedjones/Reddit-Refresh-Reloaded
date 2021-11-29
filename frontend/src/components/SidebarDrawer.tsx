@@ -11,6 +11,7 @@ const NotifierItems = () => {
   const { data, fetching, error } = result;
 
   if (fetching) return <> </>;
+  if (error) console.log(error);
 
   return (
     <div>

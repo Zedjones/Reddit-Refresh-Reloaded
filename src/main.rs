@@ -6,6 +6,7 @@ mod notifiers;
 mod routes;
 mod scanner;
 
+use actix_cors::Cors;
 use actix_web::middleware::Logger;
 use actix_web::{guard, web, App, HttpServer};
 use dotenv;
@@ -57,6 +58,7 @@ async fn main() -> anyhow::Result<()> {
             .data(schema(pool.clone(), encoder.clone(), db_url.clone()))
             .data(encoder.clone())
             .data(db_url.clone())
+            .wrap(Cors::permissive())
             .wrap(Logger::default())
             .service(
                 web::resource("/subscriptions")

@@ -20,7 +20,9 @@ export const client = createClient({
   fetchOptions: () => {
     const token = getToken();
     return {
-      headers: { authorization: token ? `Bearer ${token}` : '' }
+      headers: {
+        Authorization: token ? `Bearer ${token}` : ''
+      }
     };
   },
   exchanges: [
