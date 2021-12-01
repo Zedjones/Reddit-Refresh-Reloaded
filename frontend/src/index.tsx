@@ -3,8 +3,9 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
-import { createClient, defaultExchanges, subscriptionExchange } from '@urql/core';
+import { createClient, subscriptionExchange, errorExchange, fetchExchange } from '@urql/core';
 import { createClient as createWSClient } from 'graphql-ws';
+import SnackbarUtils from './components/SnackbarUtils';
 
 const getToken = () => {
   return localStorage.getItem('accessToken');
@@ -26,7 +27,18 @@ export const client = createClient({
     };
   },
   exchanges: [
-    ...defaultExchanges,
+    errorExchange({
+      onError(error) {
+        console.log(error);
+        if (error.graphQLErrors.length > 0) {
+          SnackbarUtils.error(error.graphQLErrors[0].message);
+        }
+        else if (error.networkError) {
+          SnackbarUtils.error(error.networkError.message);
+        }
+      }
+    }),
+    fetchExchange,
     subscriptionExchange({
       forwardSubscription: (operation) => ({
         subscribe: (sink) => ({

@@ -8,10 +8,9 @@ import { useGetUserSettingsQuery } from '../types';
 const NotifierItems = () => {
   const [result, refetch] = useGetUserSettingsQuery();
 
-  const { data, fetching, error } = result;
+  const { data, fetching } = result;
 
   if (fetching) return <> </>;
-  if (error) console.log(error);
 
   return (
     <div>
