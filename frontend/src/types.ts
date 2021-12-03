@@ -143,6 +143,14 @@ export type GetUserSettingsQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type GetUserSettingsQuery = { __typename?: 'Query', getUserInfo: { __typename?: 'User', settings: Array<{ __typename?: 'AppriseConfig', id: number, uri: string, name: string, urgency: Urgency }> } };
 
+export type LoginMutationVariables = Exact<{
+  username: Scalars['String'];
+  password: Scalars['String'];
+}>;
+
+
+export type LoginMutation = { __typename?: 'Mutation', login: string };
+
 
 export const GetUserSettingsDocument = gql`
     query getUserSettings {
@@ -159,4 +167,13 @@ export const GetUserSettingsDocument = gql`
 
 export function useGetUserSettingsQuery(options: Omit<Urql.UseQueryArgs<GetUserSettingsQueryVariables>, 'query'> = {}) {
   return Urql.useQuery<GetUserSettingsQuery>({ query: GetUserSettingsDocument, ...options });
+};
+export const LoginDocument = gql`
+    mutation login($username: String!, $password: String!) {
+  login(username: $username, password: $password)
+}
+    `;
+
+export function useLoginMutation() {
+  return Urql.useMutation<LoginMutation, LoginMutationVariables>(LoginDocument);
 };

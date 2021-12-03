@@ -1,4 +1,3 @@
-import * as React from 'react';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -12,19 +11,30 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { useLoginMutation } from '../types';
+import { useState } from 'react';
 
 const theme = createTheme();
 
-export default function SignIn() {
+interface SignInProps {
+  signUp?: boolean;
+}
+
+export default function SignIn(props: SignInProps) {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+
+  const [result, submitLogin] = useLoginMutation();
+
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    // eslint-disable-next-line no-console
-    console.log({
-      email: data.get('email'),
-      password: data.get('password'),
-    });
+    submitLogin({
+      username: username,
+      password: password,
+    })
   };
+
+  const actionString = props.signUp ? 'Sign up' : 'Sign in'
 
   return (
     <ThemeProvider theme={theme}>
@@ -42,18 +52,20 @@ export default function SignIn() {
             <LockOutlinedIcon />
           </Avatar>
           <Typography component="h1" variant="h5">
-            Sign in
+            {actionString}
           </Typography>
           <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
             <TextField
               margin="normal"
               required
               fullWidth
-              id="email"
-              label="Email Address"
-              name="email"
-              autoComplete="email"
+              id="username"
+              label="Username"
+              name="username"
+              autoComplete="username"
               autoFocus
+              value={username}
+              onChange={newVal => setUsername(newVal.target.value)}
             />
             <TextField
               margin="normal"
@@ -64,6 +76,8 @@ export default function SignIn() {
               type="password"
               id="password"
               autoComplete="current-password"
+              value={password}
+              onChange={newVal => setPassword(newVal.target.value)}
             />
             <FormControlLabel
               control={<Checkbox value="remember" color="primary" />}
@@ -75,20 +89,17 @@ export default function SignIn() {
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
             >
-              Sign In
+              {actionString}
             </Button>
-            <Grid container>
-              <Grid item xs>
-                <Link href="#" variant="body2">
-                  Forgot password?
-                </Link>
+            {!props.signUp &&
+              <Grid container>
+                <Grid item>
+                  <Link href="/signup" variant="body2">
+                    {"Don't have an account? Sign Up"}
+                  </Link>
+                </Grid>
               </Grid>
-              <Grid item>
-                <Link href="#" variant="body2">
-                  {"Don't have an account? Sign Up"}
-                </Link>
-              </Grid>
-            </Grid>
+            }
           </Box>
         </Box>
       </Container>
