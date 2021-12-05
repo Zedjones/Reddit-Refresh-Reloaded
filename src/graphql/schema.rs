@@ -90,6 +90,7 @@ impl Mutation {
         ctx: &Context<'_>,
         subreddit: String,
         search_term: String,
+        refresh_time: Option<DurationString>,
     ) -> FieldResult<Search> {
         let pool = ctx.data::<PgPool>().unwrap();
         let username = verify_token(ctx)?;
@@ -98,6 +99,7 @@ impl Mutation {
                 username: username.clone(),
                 search_term,
                 subreddit,
+                refresh_time: refresh_time.map(|time| time.0),
             },
             pool,
         )

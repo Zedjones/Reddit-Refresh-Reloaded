@@ -11,7 +11,7 @@ use tokio_stream::StreamExt;
 
 pub struct Manager {
     pool: PgPool,
-    search_url: String,
+    db_url: String,
     scanner_map: HashMap<i32, AbortHandle>,
 }
 
@@ -30,7 +30,7 @@ impl Manager {
         }
         Ok(Manager {
             pool,
-            search_url,
+            db_url: search_url,
             scanner_map,
         })
     }
@@ -70,7 +70,7 @@ impl Manager {
         Ok(())
     }
     pub async fn monitor(mut self) -> anyhow::Result<()> {
-        let mut listener = PgListener::connect(&self.search_url).await?;
+        let mut listener = PgListener::connect(&self.db_url).await?;
         listener.listen("searches_changes").await?;
         let mut stream = listener.into_stream();
         while let Some(notification) = stream.try_next().await? {

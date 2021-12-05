@@ -31,7 +31,7 @@ impl User {
         Ok(User {
             username: user.username,
             password: user.password,
-            refresh_time: Self::convert_to_duration(user.refresh_time.unwrap()),
+            refresh_time: Self::convert_to_duration(user.refresh_time),
             notifiers: Vec::new(),
         })
     }
@@ -47,9 +47,7 @@ impl User {
         Ok(User {
             username: user.username.clone(),
             password: user.password,
-            refresh_time: Duration::from_micros(
-                user.refresh_time.unwrap().microseconds.try_into().unwrap(),
-            ),
+            refresh_time: Duration::from_micros(user.refresh_time.microseconds.try_into().unwrap()),
             notifiers: AppriseConfig::get_configs_for_user(&user.username, &pool).await?, //TODO: update this for actual settings
         })
     }

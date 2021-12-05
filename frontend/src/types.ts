@@ -54,6 +54,7 @@ export type MutationAddNotifierArgs = {
 
 
 export type MutationAddSearchArgs = {
+  refreshTime?: InputMaybe<Scalars['Duration']>;
   searchTerm: Scalars['String'];
   subreddit: Scalars['String'];
 };
@@ -100,6 +101,7 @@ export type Result = {
 export type Search = {
   __typename?: 'Search';
   id: Scalars['Int'];
+  refreshTime?: Maybe<Scalars['Duration']>;
   results: Array<Result>;
   searchTerm: Scalars['String'];
   subreddit: Scalars['String'];

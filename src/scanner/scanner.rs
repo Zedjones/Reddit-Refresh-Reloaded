@@ -48,7 +48,9 @@ impl Scanner {
     }
     pub async fn check_results(&self) {
         loop {
-            tokio::time::delay_for(self.refresh_time).await;
+            // Use the search refresh time, or the user refresh time if there is none
+            let wait_time = self.search.refresh_time.unwrap_or(self.refresh_time);
+            tokio::time::delay_for(wait_time).await;
             let search_result = self.search_reddit().await;
             let res = match search_result {
                 Err(error) => Err(error),

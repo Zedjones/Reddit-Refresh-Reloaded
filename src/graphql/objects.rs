@@ -16,6 +16,9 @@ impl Search {
         let pool = ctx.data::<PgPool>().unwrap();
         Ok(Result::get_results_by_search(self.id, pool).await?)
     }
+    async fn refresh_time(&self) -> Option<DurationString> {
+        self.refresh_time.map(|time| time.into())
+    }
 }
 
 #[async_graphql::Object]

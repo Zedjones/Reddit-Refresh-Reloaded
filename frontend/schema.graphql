@@ -28,7 +28,7 @@ type Mutation {
 	Create a user with the provided username, password, and refresh time
 	"""
 	createUser(username: String!, password: String!, refreshTime: Duration!): User!
-	addSearch(subreddit: String!, searchTerm: String!): Search!
+	addSearch(subreddit: String!, searchTerm: String!, refreshTime: Duration): Search!
 	deleteSearch(id: Int!): Int!
 	login(username: String!, password: String!): String!
 	addNotifier(name: String!, uri: String!, priority: Urgency!): AppriseConfig!
@@ -51,6 +51,7 @@ type Search {
 	subreddit: String!
 	searchTerm: String!
 	results: [Result!]!
+	refreshTime: Duration
 }
 type SearchChange {
 	operation: ChangeType!

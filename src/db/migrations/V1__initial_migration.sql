@@ -1,7 +1,7 @@
 CREATE TABLE users (
     username VARCHAR UNIQUE PRIMARY KEY NOT NULL,
     password VARCHAR NOT NULL,
-    refresh_time INTERVAL
+    refresh_time INTERVAL NOT NULL
 );
 
 CREATE TABLE searches (
@@ -9,6 +9,7 @@ CREATE TABLE searches (
     username VARCHAR NOT NULL,
     subreddit VARCHAR NOT NULL,
     search_term VARCHAR NOT NULL,
+    refresh_time INTERVAL,
     CONSTRAINT unique_keys UNIQUE (username, subreddit, search_term),
     FOREIGN KEY (username) REFERENCES users(username)
 );
