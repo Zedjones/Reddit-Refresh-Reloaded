@@ -40,7 +40,7 @@ export type Mutation = {
   addNotifier: AppriseConfig;
   addSearch: Search;
   /** Create a user with the provided username, password, and refresh time */
-  createUser: User;
+  createUser: Scalars['String'];
   deleteSearch: Scalars['Int'];
   login: Scalars['String'];
 };
@@ -153,6 +153,15 @@ export type LoginMutationVariables = Exact<{
 
 export type LoginMutation = { __typename?: 'Mutation', login: string };
 
+export type CreateUserMutationVariables = Exact<{
+  username: Scalars['String'];
+  password: Scalars['String'];
+  refreshTime: Scalars['Duration'];
+}>;
+
+
+export type CreateUserMutation = { __typename?: 'Mutation', createUser: string };
+
 
 export const GetUserSettingsDocument = gql`
     query getUserSettings {
@@ -178,4 +187,13 @@ export const LoginDocument = gql`
 
 export function useLoginMutation() {
   return Urql.useMutation<LoginMutation, LoginMutationVariables>(LoginDocument);
+};
+export const CreateUserDocument = gql`
+    mutation createUser($username: String!, $password: String!, $refreshTime: Duration!) {
+  createUser(username: $username, password: $password, refreshTime: $refreshTime)
+}
+    `;
+
+export function useCreateUserMutation() {
+  return Urql.useMutation<CreateUserMutation, CreateUserMutationVariables>(CreateUserDocument);
 };

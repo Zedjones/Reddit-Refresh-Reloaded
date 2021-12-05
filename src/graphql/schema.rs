@@ -72,18 +72,19 @@ impl Mutation {
         username: String,
         password: String,
         refresh_time: DurationString,
-    ) -> FieldResult<User> {
+    ) -> FieldResult<String> {
         let pool = ctx.data::<PgPool>().unwrap();
-        Ok(User::insert(
+        User::insert(
             User {
-                username,
-                password,
+                username: username.clone(),
+                password: password.clone(),
                 refresh_time: refresh_time.0,
                 notifiers: Vec::new(),
             },
             pool,
         )
-        .await?)
+        .await?;
+        Ok(self.login(ctx, username, password).await?)
     }
     async fn add_search(
         &self,

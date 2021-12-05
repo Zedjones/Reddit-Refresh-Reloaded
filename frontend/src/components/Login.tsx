@@ -11,8 +11,10 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { useLoginMutation } from '../types';
-import { useState } from 'react';
+import { useLoginMutation, useCreateUserMutation } from '../types';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useLocalStorage } from '@rehooks/local-storage';
 
 const theme = createTheme();
 
@@ -23,18 +25,48 @@ interface SignInProps {
 export default function SignIn(props: SignInProps) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [refreshTime, setRefreshTime] = useState('5m');
 
-  const [result, submitLogin] = useLoginMutation();
+  const [loginResult, submitLogin] = useLoginMutation();
+  const [createResult, submitCreateUser] = useCreateUserMutation();
+  const navigate = useNavigate();
+  const [accessToken, setAccessToken] = useLocalStorage('accessToken');
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    submitLogin({
-      username: username,
-      password: password,
-    })
+    if (props.signUp) {
+      submitCreateUser({
+        username,
+        password,
+        refreshTime: "5m",
+      })
+    } else {
+      submitLogin({
+        username,
+        password
+      });
+    }
   };
 
-  const actionString = props.signUp ? 'Sign up' : 'Sign in'
+  useEffect(() => {
+    if (accessToken) {
+      navigate("/");
+    }
+  }, [accessToken, navigate]);
+
+  const actionString = props.signUp ? 'Sign up' : 'Sign in';
+
+  useEffect(() => {
+    if (loginResult.data) {
+      setAccessToken(loginResult.data.login);
+    }
+  }, [loginResult, setAccessToken]);
+
+  useEffect(() => {
+    if (createResult.data) {
+      setAccessToken(createResult.data.createUser);
+    }
+  }, [createResult, setAccessToken]);
 
   return (
     <ThemeProvider theme={theme}>
@@ -78,10 +110,6 @@ export default function SignIn(props: SignInProps) {
               autoComplete="current-password"
               value={password}
               onChange={newVal => setPassword(newVal.target.value)}
-            />
-            <FormControlLabel
-              control={<Checkbox value="remember" color="primary" />}
-              label="Remember me"
             />
             <Button
               type="submit"

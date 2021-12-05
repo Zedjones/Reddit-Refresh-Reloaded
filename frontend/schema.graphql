@@ -27,7 +27,7 @@ type Mutation {
 	"""
 	Create a user with the provided username, password, and refresh time
 	"""
-	createUser(username: String!, password: String!, refreshTime: Duration!): User!
+	createUser(username: String!, password: String!, refreshTime: Duration!): String!
 	addSearch(subreddit: String!, searchTerm: String!, refreshTime: Duration): Search!
 	deleteSearch(id: Int!): Int!
 	login(username: String!, password: String!): String!
