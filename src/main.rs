@@ -7,6 +7,7 @@ mod routes;
 mod scanner;
 
 use actix_cors::Cors;
+use actix_files as fs;
 use actix_web::middleware::Logger;
 use actix_web::{guard, web, App, HttpServer};
 use dotenv;
@@ -17,7 +18,7 @@ use auth::Encoder;
 use config::Config;
 use db::timeout_connect;
 use graphql::schema::schema;
-use routes::{graphql as graphql_handler, graphql_playground, graphql_ws};
+use routes::{graphql as graphql_handler, graphql_playground, graphql_ws, index};
 use scanner::manager::Manager;
 
 #[actix_rt::main]
@@ -68,6 +69,8 @@ async fn main() -> anyhow::Result<()> {
             )
             .service(graphql_handler)
             .service(graphql_playground)
+            .service(fs::Files::new("/", "frontend/build/").index_file("index.html"))
+            .default_service(web::resource("").route(web::get().to(index)))
     })
     .bind("127.0.0.1:8000")?
     .run()

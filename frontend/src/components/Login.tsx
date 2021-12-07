@@ -2,8 +2,6 @@ import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
 import TextField from '@mui/material/TextField';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
 import Link from '@mui/material/Link';
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
@@ -12,9 +10,13 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { useLoginMutation, useCreateUserMutation } from '../types';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLocalStorage } from '@rehooks/local-storage';
+import SnackbarUtils from './SnackbarUtils';
+// Have to use require since `duration-js` is not properly configured
+// as an ES6 module
+const Duration = require('duration-js');
 
 const theme = createTheme();
 
@@ -26,19 +28,38 @@ export default function SignIn(props: SignInProps) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [refreshTime, setRefreshTime] = useState('5m');
+  const [refreshTimeError, setRefreshTimeError] = useState(false);
 
   const [loginResult, submitLogin] = useLoginMutation();
   const [createResult, submitCreateUser] = useCreateUserMutation();
   const navigate = useNavigate();
   const [accessToken, setAccessToken] = useLocalStorage('accessToken');
 
+  const validateRefreshTime = useCallback(() => {
+    try {
+      const duration = new Duration(refreshTime);
+      return duration.seconds() >= 5;
+    }
+    catch {
+      return false;
+    }
+  }, [refreshTime]);
+
+  const usernameError = username === '';
+  const passwordError = password.length < 8;
+  const anyError = usernameError || passwordError || refreshTimeError;
+
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (anyError) {
+      SnackbarUtils.error('Fix errors in form and resubmit.');
+      return;
+    }
     if (props.signUp) {
       submitCreateUser({
         username,
         password,
-        refreshTime: "5m",
+        refreshTime,
       })
     } else {
       submitLogin({
@@ -48,11 +69,17 @@ export default function SignIn(props: SignInProps) {
     }
   };
 
+
+
   useEffect(() => {
     if (accessToken) {
       navigate("/");
     }
   }, [accessToken, navigate]);
+
+  useEffect(() => {
+    setRefreshTimeError(!validateRefreshTime());
+  }, [validateRefreshTime, setRefreshTimeError])
 
   const actionString = props.signUp ? 'Sign up' : 'Sign in';
 
@@ -91,10 +118,12 @@ export default function SignIn(props: SignInProps) {
               margin="normal"
               required
               fullWidth
+              error={usernameError}
               id="username"
               label="Username"
               name="username"
               autoComplete="username"
+              helperText={usernameError ? 'Username must not be empty' : ''}
               autoFocus
               value={username}
               onChange={newVal => setUsername(newVal.target.value)}
@@ -103,18 +132,35 @@ export default function SignIn(props: SignInProps) {
               margin="normal"
               required
               fullWidth
+              error={passwordError}
               name="password"
               label="Password"
               type="password"
+              helperText={passwordError ? 'Password must be at least 8 characters' : ''}
               id="password"
               autoComplete="current-password"
               value={password}
               onChange={newVal => setPassword(newVal.target.value)}
             />
+            {props.signUp &&
+              <TextField
+                margin="normal"
+                error={refreshTimeError}
+                required
+                fullWidth
+                helperText={refreshTimeError ? 'Must be in Rust/Go duration format, e.g. 1d15h5m4s, and be at least 5 seconds' : ''}
+                name="refresh-time"
+                label="Refresh Time"
+                type="text"
+                id="refresh-time"
+                value={refreshTime}
+                onChange={newVal => setRefreshTime(newVal.target.value)}
+              />}
             <Button
               type="submit"
               fullWidth
               variant="contained"
+              disabled={anyError}
               sx={{ mt: 3, mb: 2 }}
             >
               {actionString}

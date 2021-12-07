@@ -31,7 +31,14 @@ export const client = createClient({
       onError(error) {
         console.log(error);
         if (error.graphQLErrors.length > 0) {
-          SnackbarUtils.error(error.graphQLErrors[0].message);
+          const firstError = error.graphQLErrors[0];
+          // Go to the login page if we're not signed in or
+          // the token is expired
+          if (firstError.extensions.code === 401) {
+            localStorage.removeItem('accessToken');
+            window.location.assign('/login');
+          }
+          SnackbarUtils.error(firstError.message);
         }
         else if (error.networkError) {
           SnackbarUtils.error(error.networkError.message);

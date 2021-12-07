@@ -1,6 +1,8 @@
 use crate::auth::Encoder;
 use crate::graphql::schema::{Schema, Username};
+use actix_files as fs;
 use actix_web::http::header::Header;
+use actix_web::Responder;
 use actix_web::{get, post, web, HttpRequest, HttpResponse, Result};
 use actix_web_httpauth::headers::authorization::{Authorization, Bearer};
 use async_graphql::http::{playground_source, GraphQLPlaygroundConfig};
@@ -72,4 +74,8 @@ pub(crate) async fn graphql_ws(
         payload,
         |payload_val| async move { handle_ws_params(encoder, payload_val) },
     )
+}
+
+pub(crate) async fn index() -> impl Responder {
+    fs::NamedFile::open("./frontend/build/index.html")
 }
