@@ -24,6 +24,16 @@ interface SignInProps {
   signUp?: boolean;
 }
 
+export const validateDuration = (durationStr: string) => {
+  try {
+    const duration = new Duration(durationStr);
+    return duration.seconds() >= 5;
+  }
+  catch {
+    return false;
+  }
+}
+
 export default function SignIn(props: SignInProps) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -36,13 +46,7 @@ export default function SignIn(props: SignInProps) {
   const [accessToken, setAccessToken] = useLocalStorage('accessToken');
 
   const validateRefreshTime = useCallback(() => {
-    try {
-      const duration = new Duration(refreshTime);
-      return duration.seconds() >= 5;
-    }
-    catch {
-      return false;
-    }
+    return validateDuration(refreshTime);
   }, [refreshTime]);
 
   const usernameError = username === '';

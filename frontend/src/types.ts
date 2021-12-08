@@ -145,6 +145,27 @@ export type GetUserSettingsQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type GetUserSettingsQuery = { __typename?: 'Query', getUserInfo: { __typename?: 'User', settings: Array<{ __typename?: 'AppriseConfig', id: number, uri: string, name: string, urgency: Urgency }> } };
 
+export type GetUserSearchesQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetUserSearchesQuery = { __typename?: 'Query', getUserInfo: { __typename?: 'User', username: string, refreshTime: any, searches: Array<{ __typename?: 'Search', subreddit: string, searchTerm: string, id: number }> } };
+
+export type AddSearchMutationVariables = Exact<{
+  subreddit: Scalars['String'];
+  searchTerm: Scalars['String'];
+  refreshTime?: InputMaybe<Scalars['Duration']>;
+}>;
+
+
+export type AddSearchMutation = { __typename?: 'Mutation', addSearch: { __typename?: 'Search', id: number } };
+
+export type DeleteSearchMutationVariables = Exact<{
+  id: Scalars['Int'];
+}>;
+
+
+export type DeleteSearchMutation = { __typename?: 'Mutation', deleteSearch: number };
+
 export type LoginMutationVariables = Exact<{
   username: Scalars['String'];
   password: Scalars['String'];
@@ -178,6 +199,47 @@ export const GetUserSettingsDocument = gql`
 
 export function useGetUserSettingsQuery(options: Omit<Urql.UseQueryArgs<GetUserSettingsQueryVariables>, 'query'> = {}) {
   return Urql.useQuery<GetUserSettingsQuery>({ query: GetUserSettingsDocument, ...options });
+};
+export const GetUserSearchesDocument = gql`
+    query getUserSearches {
+  getUserInfo {
+    username
+    refreshTime
+    searches {
+      subreddit
+      searchTerm
+      id
+    }
+  }
+}
+    `;
+
+export function useGetUserSearchesQuery(options: Omit<Urql.UseQueryArgs<GetUserSearchesQueryVariables>, 'query'> = {}) {
+  return Urql.useQuery<GetUserSearchesQuery>({ query: GetUserSearchesDocument, ...options });
+};
+export const AddSearchDocument = gql`
+    mutation addSearch($subreddit: String!, $searchTerm: String!, $refreshTime: Duration) {
+  addSearch(
+    subreddit: $subreddit
+    searchTerm: $searchTerm
+    refreshTime: $refreshTime
+  ) {
+    id
+  }
+}
+    `;
+
+export function useAddSearchMutation() {
+  return Urql.useMutation<AddSearchMutation, AddSearchMutationVariables>(AddSearchDocument);
+};
+export const DeleteSearchDocument = gql`
+    mutation deleteSearch($id: Int!) {
+  deleteSearch(id: $id)
+}
+    `;
+
+export function useDeleteSearchMutation() {
+  return Urql.useMutation<DeleteSearchMutation, DeleteSearchMutationVariables>(DeleteSearchDocument);
 };
 export const LoginDocument = gql`
     mutation login($username: String!, $password: String!) {

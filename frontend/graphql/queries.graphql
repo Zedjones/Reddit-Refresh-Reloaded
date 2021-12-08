@@ -9,6 +9,28 @@ query getUserSettings {
   }
 }
 
+query getUserSearches {
+  getUserInfo {
+    username
+    refreshTime
+    searches {
+      subreddit
+      searchTerm
+      id
+    }
+  }
+}
+
+mutation addSearch($subreddit: String!, $searchTerm: String!, $refreshTime: Duration) {
+  addSearch(subreddit: $subreddit, searchTerm: $searchTerm, refreshTime: $refreshTime) {
+    id
+  }
+}
+
+mutation deleteSearch($id: Int!) {
+  deleteSearch(id: $id)
+}
+
 mutation login($username: String!, $password: String!){
   login(username: $username, password: $password)
 }
