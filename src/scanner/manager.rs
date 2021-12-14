@@ -16,8 +16,9 @@ pub struct Manager {
 }
 
 impl Manager {
-    pub async fn new(pool: PgPool, search_url: String) -> anyhow::Result<Self> {
+    pub async fn new(pool: PgPool, db_url: String) -> anyhow::Result<Self> {
         let searches = Search::get_searches(&pool).await?;
+        log::info!("{:?}", searches);
         let mut scanner_map: HashMap<i32, AbortHandle> = HashMap::new();
         for (search, refresh_time) in searches {
             let id = search.id;
@@ -30,7 +31,7 @@ impl Manager {
         }
         Ok(Manager {
             pool,
-            db_url: search_url,
+            db_url,
             scanner_map,
         })
     }

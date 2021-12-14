@@ -40,6 +40,7 @@ export default function SidebarDrawer() {
 
   const { data, fetching } = result;
 
+  // Function to create an object mapping subreddit name to search
   const sortBySub = useMemo(() => {
     const searchArray = data?.getUserInfo.searches ?? [];
     const grouped = _.groupBy(searchArray, 'subreddit');

@@ -47,8 +47,8 @@ export default function SearchDialog(props: SearchDialogProps) {
     }
   });
 
-  const handleClickOpen = () => {
-    setOpen(true);
+  const handleClose = () => {
+    setOpen(false);
   };
 
   // Don't have Formik as a depdendency to prevent an infinite loop
@@ -62,13 +62,11 @@ export default function SearchDialog(props: SearchDialogProps) {
     }
   }, [addSearchResult])
 
-  const handleClose = () => {
-    setOpen(false);
-  };
-
   return (
     <div>
-      <Dialog open={open} onClose={handleClose}>
+      <Dialog open={open} onClose={handleClose} TransitionProps={{
+        onExited: () => formik.resetForm()
+      }}>
         <form onSubmit={formik.handleSubmit}>
           <DialogTitle>Subscribe</DialogTitle>
           <DialogContent>
