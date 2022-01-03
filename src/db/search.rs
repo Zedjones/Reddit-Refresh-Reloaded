@@ -1,9 +1,19 @@
 use async_graphql::SimpleObject;
-use serde::{Deserialize, Serialize};
+use serde::{de::Error, Deserialize, Deserializer, Serialize};
 use sqlx::{postgres::types::PgInterval, Done, PgPool};
 use std::time::Duration;
 
 use crate::db::User;
+
+fn from_interval<'de, D>(deserializer: D) -> Result<Option<Duration>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let s: &str = Deserialize::deserialize(deserializer)?;
+    Ok(Some(
+        humantime::parse_duration(s).map_err(D::Error::custom)?,
+    ))
+}
 
 #[derive(Serialize, Deserialize, Debug, Hash, PartialEq, Eq, SimpleObject)]
 #[graphql(complex)]
@@ -12,6 +22,8 @@ pub(crate) struct Search {
     pub username: String,
     pub subreddit: String,
     pub search_term: String,
+    #[serde(default)]
+    #[serde(deserialize_with = "from_interval")]
     #[graphql(skip)]
     pub refresh_time: Option<Duration>,
 }

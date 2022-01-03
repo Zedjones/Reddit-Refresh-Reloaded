@@ -45,6 +45,15 @@ impl Query {
         let username = verify_token(ctx)?;
         Ok(Search::get_user_searches(&username, pool).await?)
     }
+    async fn get_search(&self, ctx: &Context<'_>, id: i32) -> FieldResult<Search> {
+        let pool = ctx.data::<PgPool>().unwrap();
+        let username = verify_token(ctx)?;
+        let search = Search::get_search(id, pool).await?;
+        if search.username != username {
+            anyhow::anyhow!("Trying to fetch a search for a different user");
+        }
+        Ok(search)
+    }
     async fn get_searches_for_subreddit(
         &self,
         ctx: &Context<'_>,

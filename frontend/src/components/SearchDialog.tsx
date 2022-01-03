@@ -68,11 +68,11 @@ export default function SearchDialog(props: SearchDialogProps) {
         onExited: () => formik.resetForm()
       }}>
         <form onSubmit={formik.handleSubmit}>
-          <DialogTitle>Subscribe</DialogTitle>
+          <DialogTitle>Add Search</DialogTitle>
           <DialogContent>
             <DialogContentText>
-              To subscribe to this website, please enter your email address here. We
-              will send updates occasionally.
+              To add a new search term, enter the subreddit, search term, and optionally a refresh time
+              to override the account-wide refresh time.
             </DialogContentText>
             <TextField
               autoFocus={props.subreddit === undefined}

@@ -21,6 +21,16 @@ query getUserSearches {
   }
 }
 
+query getSearchResults($id: Int!) {
+  getSearch(id: $id) {
+    results {
+      permalink
+      title
+      inserted
+    }
+  }
+}
+
 mutation addSearch($subreddit: String!, $searchTerm: String!, $refreshTime: Duration) {
   addSearch(subreddit: $subreddit, searchTerm: $searchTerm, refreshTime: $refreshTime) {
     id

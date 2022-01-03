@@ -16,6 +16,8 @@ import { useLocalStorage } from '@rehooks/local-storage';
 import SnackbarUtils from './SnackbarUtils';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
+import { Backdrop } from '@mui/material';
+import { CircularProgress } from '@mui/material';
 // Have to use require since `duration-js` is not properly configured
 // as an ES6 module
 const Duration = require('duration-js');
@@ -102,17 +104,23 @@ export default function SignIn(props: SignInProps) {
     if (loginResult.data) {
       setAccessToken(loginResult.data.login);
     }
-  }, [loginResult, setAccessToken]);
+  }, [loginResult.data, setAccessToken]);
 
   // Set access token when create user returns
   useEffect(() => {
     if (createResult.data) {
       setAccessToken(createResult.data.createUser);
     }
-  }, [createResult, setAccessToken]);
+  }, [createResult.data, setAccessToken]);
 
   return (
     <ThemeProvider theme={theme}>
+      <Backdrop
+        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        open={createResult.fetching || loginResult.fetching}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
       <Container component="main" maxWidth="xs">
         <CssBaseline />
         <Box

@@ -79,9 +79,15 @@ export type MutationLoginArgs = {
 
 export type Query = {
   __typename?: 'Query';
+  getSearch: Search;
   getSearches: Array<Search>;
   getSearchesForSubreddit: Array<Search>;
   getUserInfo: User;
+};
+
+
+export type QueryGetSearchArgs = {
+  id: Scalars['Int'];
 };
 
 
@@ -150,6 +156,13 @@ export type GetUserSearchesQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type GetUserSearchesQuery = { __typename?: 'Query', getUserInfo: { __typename?: 'User', username: string, refreshTime: any, searches: Array<{ __typename?: 'Search', subreddit: string, searchTerm: string, id: number }> } };
 
+export type GetSearchResultsQueryVariables = Exact<{
+  id: Scalars['Int'];
+}>;
+
+
+export type GetSearchResultsQuery = { __typename?: 'Query', getSearch: { __typename?: 'Search', results: Array<{ __typename?: 'Result', permalink: string, title: string, inserted: any }> } };
+
 export type AddSearchMutationVariables = Exact<{
   subreddit: Scalars['String'];
   searchTerm: Scalars['String'];
@@ -216,6 +229,21 @@ export const GetUserSearchesDocument = gql`
 
 export function useGetUserSearchesQuery(options: Omit<Urql.UseQueryArgs<GetUserSearchesQueryVariables>, 'query'> = {}) {
   return Urql.useQuery<GetUserSearchesQuery>({ query: GetUserSearchesDocument, ...options });
+};
+export const GetSearchResultsDocument = gql`
+    query getSearchResults($id: Int!) {
+  getSearch(id: $id) {
+    results {
+      permalink
+      title
+      inserted
+    }
+  }
+}
+    `;
+
+export function useGetSearchResultsQuery(options: Omit<Urql.UseQueryArgs<GetSearchResultsQueryVariables>, 'query'> = {}) {
+  return Urql.useQuery<GetSearchResultsQuery>({ query: GetSearchResultsDocument, ...options });
 };
 export const AddSearchDocument = gql`
     mutation addSearch($subreddit: String!, $searchTerm: String!, $refreshTime: Duration) {

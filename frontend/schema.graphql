@@ -35,6 +35,7 @@ type Mutation {
 }
 type Query {
 	getSearches: [Search!]!
+	getSearch(id: Int!): Search!
 	getSearchesForSubreddit(subreddit: String!): [Search!]!
 	getUserInfo: User!
 }

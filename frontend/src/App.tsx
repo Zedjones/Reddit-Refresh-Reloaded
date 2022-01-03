@@ -6,6 +6,7 @@ import { SnackbarProvider } from 'notistack';
 import { SnackbarUtilsConfigurator } from './components/SnackbarUtils';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import SignIn from './components/Login';
+import ResultsPage from './components/ResultsPage';
 
 function App() {
   return (
@@ -15,6 +16,9 @@ function App() {
         <Router>
           <Routes>
             <Route index element={<SidebarDrawer />} />
+            <Route path="searches">
+              <Route path=":searchId" element={<ResultsPage />} />
+            </Route>
             <Route path='login' element={<SignIn />} />
             <Route path='signup' element={<SignIn signUp={true} />} />
           </Routes>

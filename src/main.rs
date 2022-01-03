@@ -21,7 +21,7 @@ use graphql::schema::schema;
 use routes::{graphql as graphql_handler, graphql_playground, graphql_ws, index};
 use scanner::manager::Manager;
 
-#[actix_rt::main]
+#[tokio::main]
 async fn main() -> anyhow::Result<()> {
     dotenv::dotenv().ok();
     env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
@@ -46,13 +46,16 @@ async fn main() -> anyhow::Result<()> {
 
     let db_url = config.database_url.clone();
     let manager = Manager::new(pool.clone(), db_url.clone()).await?;
-    actix_rt::spawn(async move {
+    let monitor_handle = tokio::spawn(async move {
         if let Err(error) = manager.monitor().await {
             log::error!("{}", error);
         }
     });
 
-    Ok(HttpServer::new(move || {
+    let local = tokio::task::LocalSet::new();
+    let sys = actix_rt::System::run_in_tokio("server", &local);
+
+    let server_handle = HttpServer::new(move || {
         App::new()
             .data(config.clone())
             .data(pool.clone())
@@ -75,5 +78,12 @@ async fn main() -> anyhow::Result<()> {
     })
     .bind("127.0.0.1:8000")?
     .run()
-    .await?)
+    .await?;
+
+    let (monitor_res, sys_res) = tokio::join!(monitor_handle, sys);
+    match (monitor_res, sys_res) {
+        (Err(e), _) => Err(anyhow::anyhow!(e)),
+        (_, Err(e)) => Err(anyhow::anyhow!(e)),
+        _ => Ok(server_handle),
+    }
 }

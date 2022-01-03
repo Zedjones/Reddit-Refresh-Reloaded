@@ -69,16 +69,21 @@ BEGIN
       'searches_changes',
       json_build_object(
         'operation', TG_OP,
-        'record', row_to_json(OLD)
-      )::text);
+        'record', (row_to_json(OLD)::jsonb) || (json_build_object(
+        'refresh_time', EXTRACT(epoch from OLD.refresh_time) || 's'
+      )::jsonb)
+    )::text);
 
       RETURN OLD;
   ELSE
     PERFORM pg_notify(
-    'searches_changes',
-    json_build_object(
-      'operation', TG_OP,
-      'record', row_to_json(NEW)
+      'searches_changes',
+      json_build_object(
+        'operation', TG_OP,
+        'record', (row_to_json(NEW)::jsonb) || (json_build_object(
+          'refresh_time', EXTRACT(epoch from NEW.refresh_time) || 's'
+        )::jsonb
+      )
     )::text);
 
     RETURN NEW;
