@@ -6,7 +6,7 @@ const config = {
     component: SidebarDrawer,
 }
 
-export const ToStorybook = () => <SidebarDrawer />
+export const ToStorybook = () => <SidebarDrawer drawerWidth={250} />
 
 ToStorybook.story = {
     name: 'Basic Sidebar Drawer'

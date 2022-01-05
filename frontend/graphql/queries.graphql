@@ -27,6 +27,7 @@ query getSearchResults($id: Int!) {
       permalink
       title
       inserted
+      thumbnail
     }
   }
 }

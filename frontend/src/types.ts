@@ -101,6 +101,7 @@ export type Result = {
   inserted: Scalars['DateTime'];
   permalink: Scalars['String'];
   searchId: Scalars['Int'];
+  thumbnail?: Maybe<Scalars['String']>;
   title: Scalars['String'];
 };
 
@@ -161,7 +162,7 @@ export type GetSearchResultsQueryVariables = Exact<{
 }>;
 
 
-export type GetSearchResultsQuery = { __typename?: 'Query', getSearch: { __typename?: 'Search', results: Array<{ __typename?: 'Result', permalink: string, title: string, inserted: any }> } };
+export type GetSearchResultsQuery = { __typename?: 'Query', getSearch: { __typename?: 'Search', results: Array<{ __typename?: 'Result', permalink: string, title: string, inserted: any, thumbnail?: string | null | undefined }> } };
 
 export type AddSearchMutationVariables = Exact<{
   subreddit: Scalars['String'];
@@ -237,6 +238,7 @@ export const GetSearchResultsDocument = gql`
       permalink
       title
       inserted
+      thumbnail
     }
   }
 }

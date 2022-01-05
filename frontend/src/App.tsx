@@ -6,7 +6,7 @@ import { SnackbarProvider } from 'notistack';
 import { SnackbarUtilsConfigurator } from './components/SnackbarUtils';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import SignIn from './components/Login';
-import ResultsPage from './components/ResultsPage';
+import ResultsPage from './pages/ResultsPage';
 
 function App() {
   return (
@@ -15,7 +15,7 @@ function App() {
       <Provider value={client}>
         <Router>
           <Routes>
-            <Route index element={<SidebarDrawer />} />
+            <Route index element={<SidebarDrawer drawerWidth={250} />} />
             <Route path="searches">
               <Route path=":searchId" element={<ResultsPage />} />
             </Route>

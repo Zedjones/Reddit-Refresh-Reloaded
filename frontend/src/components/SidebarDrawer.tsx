@@ -14,6 +14,7 @@ import { useEffect, useMemo, useState } from 'react';
 import * as _ from 'lodash';
 import SearchDialog from './SearchDialog';
 import SnackbarUtils from './SnackbarUtils';
+import { number } from 'yup';
 
 const NotifierItems = () => {
   const [result, refetch] = useGetUserSettingsQuery();
@@ -32,7 +33,11 @@ const NotifierItems = () => {
   );
 }
 
-export default function SidebarDrawer() {
+interface SidebarDrawerProps {
+  drawerWidth: number;
+}
+
+export default function SidebarDrawer(props: SidebarDrawerProps) {
   const [result, refetch] = useGetUserSearchesQuery();
   const [deleteResult, deleteSearch] = useDeleteSearchMutation();
   const [searchDialogSub, setSearchDialogSub] = useState<string | undefined>();
@@ -62,7 +67,13 @@ export default function SidebarDrawer() {
   }, [deleteResult]);
 
   return (
-    <Drawer open>
+    <Drawer
+      variant="permanent"
+      sx={{
+        display: { xs: 'none', sm: 'block' },
+        '& .MuiDrawer-paper': { boxSizing: 'border-box', width: props.drawerWidth },
+      }}
+      open>
       <SearchDialog subreddit={searchDialogSub} open={dialogOpen} setOpen={setOpen} />
       <List>
         <ListSubheader>

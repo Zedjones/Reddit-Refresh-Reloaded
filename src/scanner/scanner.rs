@@ -49,6 +49,11 @@ impl Scanner {
             title: result.title,
             search_id: self.search.id,
             permalink: result.url,
+            thumbnail: if result.thumbnail == "" {
+                None
+            } else {
+                Some(result.thumbnail)
+            },
         }))
     }
     pub async fn check_results(&self) {

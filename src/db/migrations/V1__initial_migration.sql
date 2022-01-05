@@ -20,6 +20,7 @@ CREATE TABLE results (
     search_id INTEGER NOT NULL,
     title VARCHAR NOT NULL,
     permalink VARCHAR NOT NULL,
+    thumbnail VARCHAR,
     FOREIGN KEY (search_id) REFERENCES searches(id),
     PRIMARY KEY (id, search_id)
 );
