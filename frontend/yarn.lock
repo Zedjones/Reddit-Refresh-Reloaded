@@ -2497,10 +2497,10 @@
   "resolved" "https://registry.npmjs.org/@popperjs/core/-/core-2.10.2.tgz"
   "version" "2.10.2"
 
-"@rehooks/local-storage@2.4.0":
-  "integrity" "sha512-LoXDbEHsuIckVgBsFAv8SuU/M7memjyfWut9Zf36TQXqqCHBRFv8bweg9PymQCa1aWIMjNrZQflFdo55FDlXYg=="
-  "resolved" "https://registry.npmjs.org/@rehooks/local-storage/-/local-storage-2.4.0.tgz"
-  "version" "2.4.0"
+"@rehooks/local-storage@2.4.4":
+  "integrity" "sha512-zE+kfOkG59n/1UTxdmbwktIosclr67Nlbf2MzUJ9mNtCSypVscNHeD1qT6JCSo5Pjj8DO893IKWNLJqKKzDL/Q=="
+  "resolved" "https://registry.npmjs.org/@rehooks/local-storage/-/local-storage-2.4.4.tgz"
+  "version" "2.4.4"
 
 "@rollup/plugin-node-resolve@^7.1.1":
   "integrity" "sha512-RxtSL3XmdTAE2byxekYLnx+98kEUOrPHF/KRVjLH+DEIHy6kjIw7YINQzn+NXiH/NTrQLAwYs0GWB+csWygA9Q=="

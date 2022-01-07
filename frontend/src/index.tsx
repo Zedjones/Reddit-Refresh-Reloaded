@@ -1,14 +1,30 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
-import { createClient, subscriptionExchange, errorExchange, fetchExchange } from '@urql/core';
+import { createClient, subscriptionExchange, errorExchange, fetchExchange, cacheExchange } from '@urql/core';
 import { createClient as createWSClient } from 'graphql-ws';
 import SnackbarUtils from './components/SnackbarUtils';
+import useLocalStorage, { deleteFromStorage } from '@rehooks/local-storage';
 
 const getToken = () => {
   return localStorage.getItem('accessToken');
+}
+
+export const useIsLoggedIn = (): [boolean, () => void] => {
+  const [accessToken] = useLocalStorage('accessToken');
+  const [loggedIn, setLoggedIn] = useState(accessToken != null);
+
+  const logOut = () => {
+    deleteFromStorage('accessToken');
+  }
+
+  useEffect(() => {
+    console.log(localStorage.getItem('accessToken'));
+    setLoggedIn(accessToken != null);
+  }, [accessToken]);
+  return [loggedIn, logOut];
 }
 
 const wsClient = createWSClient({
@@ -16,7 +32,7 @@ const wsClient = createWSClient({
 });
 
 export const client = createClient({
-  // TODO: Change this depending on how we're running
+  // TODO: Change this URL depending on how we're running
   url: 'http://localhost:8000/graphql',
   fetchOptions: () => {
     const token = getToken();
@@ -53,6 +69,7 @@ export const client = createClient({
         }),
       }),
     }),
+    cacheExchange,
   ],
 });
 

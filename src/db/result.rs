@@ -53,7 +53,8 @@ impl Result {
         let mut conn = pool.begin().await?;
         let results = sqlx::query!(
             "SELECT id, search_id, title, inserted, permalink, thumbnail FROM results \
-             WHERE search_id = $1",
+             WHERE search_id = $1 \
+             ORDER BY inserted DESC",
             search_id
         )
         .fetch_all(&mut conn)

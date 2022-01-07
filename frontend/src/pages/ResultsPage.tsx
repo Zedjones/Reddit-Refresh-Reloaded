@@ -5,33 +5,56 @@ import SidebarDrawer from "../components/SidebarDrawer";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
-import { Box, CardMedia } from "@mui/material";
+import { Box, Button, CardMedia, Grid } from "@mui/material";
+import { CardActions } from "@material-ui/core";
+import RRAppBar, { AppBarWrapper } from '../components/AppBar';
 
-type ResultsQueryItem = GetSearchResultsQuery['getSearch']['results'][0]
+type ResultsQueryItem = GetSearchResultsQuery['getSearch']['results'][0];
+
+// https://stackoverflow.com/questions/5717093/check-if-a-javascript-string-is-a-url
+function isValidHttpUrl(potentialURL: string | null) {
+  try {
+    if (!potentialURL) {
+      return false;
+    }
+    const url = new URL(potentialURL);
+    return url.protocol === "http:" || url.protocol === "https:";
+  } catch (_) {
+    return false;
+  }
+};
 
 const ResultCard = (search: ResultsQueryItem) => {
   // Have to multiply timestamp by 1000 for some reason
   const insertedDate = new Date(search.inserted * 1000);
   return (
-    <Card sx={{ minWidth: 275 }}>
-      <CardMedia>
-
-      </CardMedia>
-      <CardContent>
-        <Typography gutterBottom variant="h5" component="div">
-          {search.title}
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          {insertedDate.toString()}
-        </Typography>
-      </CardContent>
-    </Card>
+    <Box mt={3}>
+      <Card sx={{ minWidth: 275 }}>
+        {search.thumbnail && isValidHttpUrl(search.thumbnail) &&
+          <CardMedia
+            component="img"
+            image={search.thumbnail}
+            height="194"
+          />}
+        <CardContent>
+          <Typography gutterBottom variant="h5" component="div">
+            {search.title}
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            {insertedDate.toString()}
+          </Typography>
+        </CardContent>
+        <CardActions>
+          <Button target="_blank" href={search.permalink} size="small">Open</Button>
+        </CardActions>
+      </Card>
+    </Box>
   )
 }
 
 const drawerWidth = 350;
 
-export default function ResultsPage() {
+export function ResultsPage() {
   const { searchId } = useParams();
   const [parsedId, setParsedId] = useState(0);
   const navigate = useNavigate();
@@ -49,26 +72,34 @@ export default function ResultsPage() {
   const [results, refetch] = useGetSearchResultsQuery({
     variables: {
       id: parsedId
-    }
+    },
+    requestPolicy: "cache-and-network"
   });
 
-  useEffect(() => console.log(results), [results]);
-
   return (
-    <Box sx={{ display: 'flex' }}>
-      <Box
-        component="nav"
-        sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
-        aria-label="mailbox folders"
-      >
-        <SidebarDrawer drawerWidth={drawerWidth} />
+    <>
+      <RRAppBar />
+      <Box sx={{ display: 'flex' }}>
+        <Box
+          component="nav"
+          sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
+          aria-label="mailbox folders"
+        >
+          <SidebarDrawer drawerWidth={drawerWidth} />
+        </Box>
+        <Box
+          component="main"
+          sx={{ flexGrow: 1, p: 3, width: { sm: `calc(100% - ${drawerWidth}px)` } }}
+        >
+          {results.data?.getSearch.results.map(ResultCard)}
+        </Box>
       </Box>
-      <Box
-        component="main"
-        sx={{ flexGrow: 1, p: 3, width: { sm: `calc(100% - ${drawerWidth}px)` } }}
-      >
-        {results.data?.getSearch.results.map(ResultCard)}
-      </Box>
-    </Box>
+    </>
   )
 }
+
+const WrappedResults = () => <AppBarWrapper>
+  <ResultsPage />
+</AppBarWrapper>;
+
+export default ResultsPage;

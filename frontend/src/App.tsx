@@ -7,6 +7,7 @@ import { SnackbarUtilsConfigurator } from './components/SnackbarUtils';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import SignIn from './components/Login';
 import ResultsPage from './pages/ResultsPage';
+import { AuthWrapper } from './components/AuthWrapper';
 
 function App() {
   return (
@@ -14,17 +15,19 @@ function App() {
       <SnackbarUtilsConfigurator />
       <Provider value={client}>
         <Router>
-          <Routes>
-            <Route index element={<SidebarDrawer drawerWidth={250} />} />
-            <Route path="searches">
-              <Route path=":searchId" element={<ResultsPage />} />
-            </Route>
-            <Route path='login' element={<SignIn />} />
-            <Route path='signup' element={<SignIn signUp={true} />} />
-          </Routes>
+          <AuthWrapper>
+            <Routes>
+              <Route index element={<SidebarDrawer drawerWidth={350} />} />
+              <Route path="searches">
+                <Route path=":searchId" element={<ResultsPage />} />
+              </Route>
+              <Route path='login' element={<SignIn />} />
+              <Route path='signup' element={<SignIn signUp={true} />} />
+            </Routes>
+          </AuthWrapper>
         </Router>
       </Provider>
-    </ SnackbarProvider >
+    </SnackbarProvider >
   );
 }
 
