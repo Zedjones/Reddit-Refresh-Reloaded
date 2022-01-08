@@ -73,7 +73,7 @@ async fn main() -> anyhow::Result<()> {
             .service(graphql_handler)
             .service(graphql_playground)
             // Serve SPA
-            .service(fs::Files::new("/", "frontend/build/").index_file("index.html"))
+            .service(fs::Files::new("/", *config.clone().frontend_dir).index_file("index.html"))
             .default_service(web::resource("").route(web::get().to(index)))
     })
     .bind("127.0.0.1:8000")?
