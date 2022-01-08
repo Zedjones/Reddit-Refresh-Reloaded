@@ -6,6 +6,7 @@ pub struct ChildResult {
     pub id: String,
     pub title: String,
     pub thumbnail: String,
+    pub created_utc: f64,
 }
 
 #[derive(Deserialize, Debug)]

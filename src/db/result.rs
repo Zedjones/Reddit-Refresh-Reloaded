@@ -1,5 +1,5 @@
 use async_graphql::SimpleObject;
-use chrono::{NaiveDateTime, Utc};
+use chrono::{NaiveDate, NaiveDateTime, Utc};
 use serde::Deserialize;
 use sqlx::PgPool;
 
@@ -21,6 +21,7 @@ pub(crate) struct NewResult {
     pub search_id: i32,
     pub title: String,
     pub permalink: String,
+    pub timestamp: f64,
     pub thumbnail: Option<String>,
 }
 
@@ -33,7 +34,7 @@ impl Result {
             result.id,
             result.search_id,
             result.title,
-            Utc::now().naive_utc(),
+            NaiveDateTime::from_timestamp(result.timestamp.round() as i64, 0),
             result.permalink,
             result.thumbnail
         )
@@ -49,6 +50,26 @@ impl Result {
             thumbnail: result.thumbnail,
         })
     }
+    pub async fn update_timestamp(
+        search_id: i32,
+        result_id: &str,
+        new_timestamp: f64,
+        pool: &PgPool,
+    ) -> anyhow::Result<()> {
+        Ok(sqlx::query!(
+            "UPDATE results \
+             SET inserted = $3
+             WHERE id = $1 and search_id = $2
+            ",
+            result_id,
+            search_id,
+            NaiveDateTime::from_timestamp(new_timestamp.round() as i64, 0)
+        )
+        .execute(pool)
+        .await
+        .map(|_| ())?)
+    }
+
     pub async fn get_results_by_search(search_id: i32, pool: &PgPool) -> anyhow::Result<Vec<Self>> {
         let mut conn = pool.begin().await?;
         let results = sqlx::query!(
@@ -71,18 +92,20 @@ impl Result {
             })
             .collect())
     }
-    pub async fn get_latest_result_for_search(
+    pub async fn get_result_for_search(
         search_id: i32,
+        result_id: &str,
         pool: &PgPool,
     ) -> anyhow::Result<Option<Self>> {
         let mut conn = pool.begin().await?;
         let result = sqlx::query_as!(
             Result,
             "SELECT id, search_id, title, inserted, permalink, thumbnail FROM results \
-             WHERE search_id = $1 \
+             WHERE search_id = $1 and id = $2\
              ORDER BY inserted DESC \
              LIMIT 1",
-            search_id
+            search_id,
+            result_id
         )
         .fetch_all(&mut conn)
         .await?;

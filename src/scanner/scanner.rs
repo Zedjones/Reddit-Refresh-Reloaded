@@ -18,7 +18,7 @@ impl Scanner {
     pub fn new(pool: PgPool, search: Search, refresh_time: Duration) -> Self {
         let client = Client::new();
         let search_url = format!(
-            "https://old.reddit.com/r/{}/search.json?q={}&sort=new&restrict_sr=on",
+            "https://old.reddit.com/r/{}/search.json?q={}&sort=new&restrict_sr=on&limit=1",
             &search.subreddit, &search.search_term
         )
         .to_string();
@@ -49,6 +49,7 @@ impl Scanner {
             title: result.title,
             search_id: self.search.id,
             permalink: result.url,
+            timestamp: result.created_utc,
             thumbnail: if result.thumbnail == "" {
                 None
             } else {
@@ -67,15 +68,22 @@ impl Scanner {
             let res = match search_result {
                 Err(error) => Err(error),
                 Ok(Some(new_result)) => {
-                    match DbResult::get_latest_result_for_search(self.search.id, &self.pool).await {
+                    match DbResult::get_result_for_search(
+                        self.search.id,
+                        &new_result.id,
+                        &self.pool,
+                    )
+                    .await
+                    {
                         Err(error) => Err(error),
-                        Ok(Some(old_result)) => {
-                            if old_result.id != new_result.id {
-                                DbResult::insert(new_result, &self.pool).await.map(|_| ())
-                            } else {
-                                Ok(())
-                            }
-                        }
+                        Ok(Some(old_result)) => DbResult::update_timestamp(
+                            self.search.id,
+                            &old_result.id,
+                            new_result.timestamp,
+                            &self.pool,
+                        )
+                        .await
+                        .map(|_| ()),
                         Ok(None) => DbResult::insert(new_result, &self.pool).await.map(|_| ()),
                     }
                 }
