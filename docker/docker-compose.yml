@@ -1,7 +1,7 @@
 version: "3.5"
-volumes: 
-    db-data:
-    apprise-data:
+volumes:
+    db-data: null
+    apprise-data: null
 services:
     postgres:
         container_name: postgres
@@ -9,7 +9,7 @@ services:
         ports:
             - 5432:5432
         env_file: ../.env
-        volumes: 
+        volumes:
             - db-data:/var/lib/postgres/data
     apprise:
         container_name: apprise
@@ -18,3 +18,9 @@ services:
             - 8088:8000
         volumes:
             - apprise-data:/config
+
+    rr_reloaded:
+        container_name: rr_reloaded
+        build:
+            context: ..
+            dockerfile: docker/Dockerfile

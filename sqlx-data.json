@@ -1,0 +1,607 @@
+{
+  "db": "PostgreSQL",
+  "1a989d96d9cc0b0a6f88ff884cf3754540abf071c7890c85edbe49f503c8b7d9": {
+    "query": "SELECT id, search_id, title, inserted, permalink, thumbnail FROM results WHERE search_id = $1 and id = $2ORDER BY inserted DESC LIMIT 1",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Varchar"
+        },
+        {
+          "ordinal": 1,
+          "name": "search_id",
+          "type_info": "Int4"
+        },
+        {
+          "ordinal": 2,
+          "name": "title",
+          "type_info": "Varchar"
+        },
+        {
+          "ordinal": 3,
+          "name": "inserted",
+          "type_info": "Timestamp"
+        },
+        {
+          "ordinal": 4,
+          "name": "permalink",
+          "type_info": "Varchar"
+        },
+        {
+          "ordinal": 5,
+          "name": "thumbnail",
+          "type_info": "Varchar"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int4",
+          "Text"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    }
+  },
+  "257fd86abc4325008a6e9a0777b4e277e18387fe12f5519e41c6361274f47516": {
+    "query": "DELETE FROM searches WHERE id = $1 AND username = $2",
+    "describe": {
+      "columns": [],
+      "parameters": {
+        "Left": [
+          "Int4",
+          "Text"
+        ]
+      },
+      "nullable": []
+    }
+  },
+  "36ad89d2a12b8219534cd0dacc154b78e57a70bea6c408b68228916f9a5b3e36": {
+    "query": "SELECT id, search_id, title, inserted, permalink, thumbnail FROM results WHERE search_id = $1 ORDER BY inserted DESC",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Varchar"
+        },
+        {
+          "ordinal": 1,
+          "name": "search_id",
+          "type_info": "Int4"
+        },
+        {
+          "ordinal": 2,
+          "name": "title",
+          "type_info": "Varchar"
+        },
+        {
+          "ordinal": 3,
+          "name": "inserted",
+          "type_info": "Timestamp"
+        },
+        {
+          "ordinal": 4,
+          "name": "permalink",
+          "type_info": "Varchar"
+        },
+        {
+          "ordinal": 5,
+          "name": "thumbnail",
+          "type_info": "Varchar"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int4"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    }
+  },
+  "38cf455325397cf2cffca27b1e36005fcffa1afd893b871756507d67a7b869f0": {
+    "query": "SELECT id, username, subreddit, search_term, refresh_time FROM searches\n             WHERE id = $1",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int4"
+        },
+        {
+          "ordinal": 1,
+          "name": "username",
+          "type_info": "Varchar"
+        },
+        {
+          "ordinal": 2,
+          "name": "subreddit",
+          "type_info": "Varchar"
+        },
+        {
+          "ordinal": 3,
+          "name": "search_term",
+          "type_info": "Varchar"
+        },
+        {
+          "ordinal": 4,
+          "name": "refresh_time",
+          "type_info": "Interval"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int4"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    }
+  },
+  "3d0f0e6752286d2ed79b5f79a1309220a5e7f886366f617300733ae0eb434f55": {
+    "query": "SELECT id, searches.username, subreddit, search_term,\n                users.refresh_time AS user_refresh_time,\n                searches.refresh_time AS search_refresh_time\n                FROM searches\n                INNER JOIN users\n                ON searches.username = users.username",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int4"
+        },
+        {
+          "ordinal": 1,
+          "name": "username",
+          "type_info": "Varchar"
+        },
+        {
+          "ordinal": 2,
+          "name": "subreddit",
+          "type_info": "Varchar"
+        },
+        {
+          "ordinal": 3,
+          "name": "search_term",
+          "type_info": "Varchar"
+        },
+        {
+          "ordinal": 4,
+          "name": "user_refresh_time",
+          "type_info": "Interval"
+        },
+        {
+          "ordinal": 5,
+          "name": "search_refresh_time",
+          "type_info": "Interval"
+        }
+      ],
+      "parameters": {
+        "Left": []
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    }
+  },
+  "54d5df7d0ec6a1685e7f74ba2c4a7304a5f3296bb00c5039d61d4dc2233f579b": {
+    "query": "SELECT id, username, subreddit, search_term, refresh_time FROM searches WHERE username = $1 AND subreddit = $2",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int4"
+        },
+        {
+          "ordinal": 1,
+          "name": "username",
+          "type_info": "Varchar"
+        },
+        {
+          "ordinal": 2,
+          "name": "subreddit",
+          "type_info": "Varchar"
+        },
+        {
+          "ordinal": 3,
+          "name": "search_term",
+          "type_info": "Varchar"
+        },
+        {
+          "ordinal": 4,
+          "name": "refresh_time",
+          "type_info": "Interval"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Text"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    }
+  },
+  "5ece270e1a0599ade4479a2e3d648d1dfac903c670ead910b09212390f3da3e8": {
+    "query": "SELECT id, username, subreddit, search_term, refresh_time FROM searches WHERE username = $1",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int4"
+        },
+        {
+          "ordinal": 1,
+          "name": "username",
+          "type_info": "Varchar"
+        },
+        {
+          "ordinal": 2,
+          "name": "subreddit",
+          "type_info": "Varchar"
+        },
+        {
+          "ordinal": 3,
+          "name": "search_term",
+          "type_info": "Varchar"
+        },
+        {
+          "ordinal": 4,
+          "name": "refresh_time",
+          "type_info": "Interval"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    }
+  },
+  "62f1e1b199a521543e346d4dc670087a2cea7480e75f98acb39b669a4a133858": {
+    "query": "INSERT INTO searches (username, subreddit, search_term, refresh_time) VALUES ($1, $2, $3, $4) RETURNING id, username, subreddit, search_term, refresh_time",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int4"
+        },
+        {
+          "ordinal": 1,
+          "name": "username",
+          "type_info": "Varchar"
+        },
+        {
+          "ordinal": 2,
+          "name": "subreddit",
+          "type_info": "Varchar"
+        },
+        {
+          "ordinal": 3,
+          "name": "search_term",
+          "type_info": "Varchar"
+        },
+        {
+          "ordinal": 4,
+          "name": "refresh_time",
+          "type_info": "Interval"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Varchar",
+          "Varchar",
+          "Varchar",
+          "Interval"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    }
+  },
+  "715b27401977abfbdd52f8320aa196bf046314fcac5e815315060c1e51d505b8": {
+    "query": "INSERT INTO users (username, password, refresh_time) VALUES ($1, $2, $3) RETURNING username, password, refresh_time",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "username",
+          "type_info": "Varchar"
+        },
+        {
+          "ordinal": 1,
+          "name": "password",
+          "type_info": "Varchar"
+        },
+        {
+          "ordinal": 2,
+          "name": "refresh_time",
+          "type_info": "Interval"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Varchar",
+          "Varchar",
+          "Interval"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false
+      ]
+    }
+  },
+  "758a07736a3c0ae3d732152ffbae150de0e26044ec0e1c40b7561a1a77ec06ef": {
+    "query": "INSERT INTO results (id, search_id, title, inserted, permalink, thumbnail) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, search_id, title, inserted, permalink, thumbnail",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Varchar"
+        },
+        {
+          "ordinal": 1,
+          "name": "search_id",
+          "type_info": "Int4"
+        },
+        {
+          "ordinal": 2,
+          "name": "title",
+          "type_info": "Varchar"
+        },
+        {
+          "ordinal": 3,
+          "name": "inserted",
+          "type_info": "Timestamp"
+        },
+        {
+          "ordinal": 4,
+          "name": "permalink",
+          "type_info": "Varchar"
+        },
+        {
+          "ordinal": 5,
+          "name": "thumbnail",
+          "type_info": "Varchar"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Varchar",
+          "Int4",
+          "Varchar",
+          "Timestamp",
+          "Varchar",
+          "Varchar"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    }
+  },
+  "89f1c5e0e9ac58c962a5c80d53e2de0daf15d85d961645963e0aec9c884a6cfb": {
+    "query": "UPDATE results SET inserted = $3\n             WHERE id = $1 and search_id = $2\n            ",
+    "describe": {
+      "columns": [],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Int4",
+          "Timestamp"
+        ]
+      },
+      "nullable": []
+    }
+  },
+  "a2cef5569e514bcddf4ed009c7fa4b8456e8628e66edf2aee0b67c2e35ed972b": {
+    "query": "DELETE FROM results WHERE search_id = $1",
+    "describe": {
+      "columns": [],
+      "parameters": {
+        "Left": [
+          "Int4"
+        ]
+      },
+      "nullable": []
+    }
+  },
+  "ac80db9e4ac0d418359bb9a8543f70a111fbc639bdaaa6ada939851005d83c5d": {
+    "query": "SELECT username, password, refresh_time FROM users WHERE username = $1",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "username",
+          "type_info": "Varchar"
+        },
+        {
+          "ordinal": 1,
+          "name": "password",
+          "type_info": "Varchar"
+        },
+        {
+          "ordinal": 2,
+          "name": "refresh_time",
+          "type_info": "Interval"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false
+      ]
+    }
+  },
+  "bba94740035f7ebb39668b60dc670c03a40cff13aaedf5c41da0e54eb1ba3ed7": {
+    "query": "INSERT INTO notifier_configs (username, name, uri, urgency)\n         VALUES ($1, $2, $3, $4) RETURNING id, name, uri, urgency as \"urgency: _\"",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int4"
+        },
+        {
+          "ordinal": 1,
+          "name": "name",
+          "type_info": "Varchar"
+        },
+        {
+          "ordinal": 2,
+          "name": "uri",
+          "type_info": "Varchar"
+        },
+        {
+          "ordinal": 3,
+          "name": "urgency: _",
+          "type_info": {
+            "Custom": {
+              "name": "urgency",
+              "kind": {
+                "Enum": [
+                  "info",
+                  "success",
+                  "warning",
+                  "failure"
+                ]
+              }
+            }
+          }
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Varchar",
+          "Varchar",
+          "Varchar",
+          {
+            "Custom": {
+              "name": "urgency",
+              "kind": {
+                "Enum": [
+                  "info",
+                  "success",
+                  "warning",
+                  "failure"
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  },
+  "f54a3839e671d6eaed14deeb1f3622e604ab3c430106d3073e54b82a3d8f884e": {
+    "query": "SELECT id, name, uri, urgency as \"urgency: _\" FROM notifier_configs WHERE username = $1",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int4"
+        },
+        {
+          "ordinal": 1,
+          "name": "name",
+          "type_info": "Varchar"
+        },
+        {
+          "ordinal": 2,
+          "name": "uri",
+          "type_info": "Varchar"
+        },
+        {
+          "ordinal": 3,
+          "name": "urgency: _",
+          "type_info": {
+            "Custom": {
+              "name": "urgency",
+              "kind": {
+                "Enum": [
+                  "info",
+                  "success",
+                  "warning",
+                  "failure"
+                ]
+              }
+            }
+          }
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  }
+}
