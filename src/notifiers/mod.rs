@@ -6,5 +6,5 @@ mod gotify;
 
 #[async_trait]
 pub(crate) trait Notifier {
-    async fn notify(&self, result: Result);
+    async fn notify(&self, result: Result) -> anyhow::Result<()>;
 }

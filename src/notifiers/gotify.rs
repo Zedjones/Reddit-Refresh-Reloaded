@@ -13,7 +13,7 @@ pub(crate) struct GotifyNotifier {
 
 #[async_trait]
 impl Notifier for GotifyNotifier {
-    async fn notify(&self, result: crate::db::Result) {
+    async fn notify(&self, result: crate::db::Result) -> anyhow::Result<()> {
         let mut req = self
             .client
             .post(&format!("{}/message?token={}", self.server_url, self.token))
@@ -22,6 +22,6 @@ impl Notifier for GotifyNotifier {
         if let Some(priority) = self.priority {
             req = req.header("priority", priority);
         }
-        req.send().await.unwrap();
+        Ok(req.send().await.map(|_| ())?)
     }
 }

@@ -13,7 +13,7 @@ pub(crate) struct AppriseNotifier {
 
 #[async_trait]
 impl Notifier for AppriseNotifier {
-    async fn notify(&self, result: crate::db::Result) {
+    async fn notify(&self, result: crate::db::Result) -> anyhow::Result<()> {
         let json = json!({
             "urls": self.config.uri,
             "type": self.config.urgency,
@@ -26,6 +26,6 @@ impl Notifier for AppriseNotifier {
             .post(&format!("{}/notify", self.base_url))
             .json(&json);
 
-        req.send().await.unwrap();
+        Ok(req.send().await.map(|_| ())?)
     }
 }
